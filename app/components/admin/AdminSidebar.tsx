@@ -13,6 +13,7 @@ import {
   RiBarChartLine,
   RiLogoutBoxRLine,
   RiMenuLine,
+  RiFolderLine 
 } from "react-icons/ri";
 
 export default function AdminSidebar() {
@@ -23,6 +24,11 @@ export default function AdminSidebar() {
   const menuItems = [
     { name: "Dashboard", href: "/admin", icon: <RiHomeLine size={20} /> },
     { name: "Users", href: "/admin/users", icon: <RiUserLine size={20} /> },
+     {
+    name: "Categories",
+    href: "/admin/categories",
+    icon: <RiFolderLine size={20} />,
+  },
     {
       name: "Settings",
       href: "/admin/settings",
