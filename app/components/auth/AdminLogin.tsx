@@ -3,7 +3,7 @@
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link";
+import Image from "next/image";
 
 export default function AdminLogin() {
   const { login } = useAuth();
@@ -16,66 +16,85 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-200 to-yellow-100">
-      {/* Login Form Section */}
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 flex flex-col items-center">
-          {/* Logo / Brand */}
-          <div className="mb-6 text-center">
-            <h1 className="text-3xl font-bold text-green-700">
-              TerraMartz Admin
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">Supply Dashboard</p>
-          </div>
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+      <div
+        className="hidden md:flex flex-col justify-end p-16 text-white relative
+  bg-[url('/images/auth-bg.jpg')] bg-cover bg-center"
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/50 to-transparent" />
+        <div className="relative z-10">
+          <h1 className="text-5xl font-bold mb-2">TerraMartz Admin Console</h1>
+          <p className="text-lg opacity-90 mb-6">
+            Monitor operations, manage partners, and control inventory from one
+            place.
+          </p>
 
-          {/* Login Form */}
-          <div className="w-full space-y-4">
+          <ul className="space-y-5 text-2xl">
+            <li>✔ Secure role-based access</li>
+            <li>✔ Real-time supply insights</li>
+            <li>✔ Faster procurement workflows</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md">
+          <div className="relative w-[100px] h-[100px] mb-8">
+            <Image
+              src="/images/terramartz-logo.png"
+              alt="Terramartz Logo"
+              fill
+              priority
+              sizes="(max-width: 768px) 140px, 180px"
+              className="object-contain"
+            />
+          </div>
+          <h2 className="text-4xl font-semibold text-black mb-1">
+            Welcome Back
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Access your supply dashboard
+          </p>
+
+          <form className="space-y-4">
             <input
               type="email"
-              placeholder="Email"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+              placeholder="Email address"
+              className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
             />
             <input
               type="password"
               placeholder="Password"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
             />
 
-            {/* Remember Me + Forgot Password */}
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <label className="flex items-center space-x-2">
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 text-black cursor-pointer">
                 <input
-                  type="checkbox"
                   checked={rememberMe}
                   onChange={() => setRememberMe(!rememberMe)}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  type="checkbox"
+                  className="h-4 w-4 accent-green-600"
                 />
-                <span>Remember Me</span>
+                Remember me
               </label>
               <button
-                type="button"
-                className="hover:text-green-700 font-medium"
+                className="text-green-600 hover:underline"
                 onClick={() => alert("Forgot password clicked")}
               >
-                Forgot Password?
+                Forgot password?
               </button>
             </div>
 
-            {/* Login Button */}
             <button
               onClick={handleLogin}
-              className="w-full bg-green-600 hover:bg-green-700 transition-colors text-white py-3 rounded-lg font-semibold shadow"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition"
             >
               Login
             </button>
-          </div>
-
-          {/* Footer / Extra */}
-          <div className="mt-6 text-gray-400 text-sm text-center">
-            Demo Login – No credentials needed
-          </div>
+          </form>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
