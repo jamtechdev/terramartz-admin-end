@@ -17,28 +17,27 @@ type UserFormProps = {
 
 export default function UserForm({ user, onChange, onSave, title }: UserFormProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg mx-auto mt-6">
+    <div className="max-w-lg mt-6">
       <h2 className="text-2xl font-bold mb-4 text-green-700">{title || "User Form"}</h2>
-
       <div className="space-y-4">
         <input
           type="text"
           value={user.name}
           onChange={(e) => onChange({ ...user, name: e.target.value })}
-          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400"
+          className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
           placeholder="Name"
         />
         <input
           type="email"
           value={user.email}
           onChange={(e) => onChange({ ...user, email: e.target.value })}
-          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400"
+          className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
           placeholder="Email"
         />
         <select
           value={user.role}
           onChange={(e) => onChange({ ...user, role: e.target.value })}
-          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400"
+          className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         >
           <option>User</option>
           <option>Admin</option>
@@ -49,7 +48,7 @@ export default function UserForm({ user, onChange, onSave, title }: UserFormProp
           onChange={(e) =>
             onChange({ ...user, status: e.target.value as "Active" | "Inactive" })
           }
-          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-400"
+          className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         >
           <option>Active</option>
           <option>Inactive</option>
