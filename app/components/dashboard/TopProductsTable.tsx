@@ -1,7 +1,7 @@
 "use client";
 
-type Product = {
-   id: number;
+export type Product = {
+  id: number;
   name: string;
   sku: string;
   category: string;
@@ -12,8 +12,9 @@ type Product = {
 };
 
 type TopProductsTableProps = {
-  products: Product[];
+  products: readonly Product[];
 };
+
 
 export default function TopProductsTable({ products }: TopProductsTableProps) {
   return (

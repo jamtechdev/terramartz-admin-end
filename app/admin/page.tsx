@@ -3,7 +3,7 @@
 import { FaAppleAlt, FaDollarSign, FaUsers, FaBoxes } from "react-icons/fa";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import StatsCard from "../components/dashboard/StatsCard";
-import TopProductsTable from "../components/dashboard/TopProductsTable";
+import TopProductsTable, { Product } from "../components/dashboard/TopProductsTable";
 import UserList from "../components/admin/users/UserList";
 import DashboardCard from "../components/common/DashboardCard";
 
@@ -34,8 +34,7 @@ export default function AdminDashboard() {
       Color: "red-500",
     },
   ];
-
-  const topProducts = [
+const topProducts: readonly Product[]= [
     {
       id: 1,
       name: "Organic Tomatoes",

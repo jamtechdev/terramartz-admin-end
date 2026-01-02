@@ -6,12 +6,13 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 export type User = {
-  id: string;
+  id?: string;
   name: string;
   email: string;
   role: string;
   status: "Active" | "Inactive";
 };
+
 
 export default function EditUserPage() {
   const router = useRouter();
