@@ -11,7 +11,7 @@ export default function AdminLogin() {
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleLogin = () => {
-    // login(); // frontend demo login
+    login(); // frontend demo login
     router.push("/admin");
   };
 
