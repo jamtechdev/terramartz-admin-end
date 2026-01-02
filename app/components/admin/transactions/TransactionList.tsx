@@ -2,8 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { RiExchangeDollarLine } from "react-icons/ri";
 import { transactionService } from "@/app/services/transaction.service";
 import { format } from "date-fns";
 
@@ -29,7 +27,7 @@ export default function TransactionList() {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 5;
 
-  // Fetch transactions from API
+  // Fetch transactions
   const fetchTransactions = async (
     pageNum = page,
     searchTerm = search,
@@ -46,22 +44,15 @@ export default function TransactionList() {
         paymentTerm
       );
 
-      const mappedTransactions: Transaction[] = data.transactions.map(
-        (txn: any) => ({
-          _id: txn._id,
-          buyerName:
-            txn.buyerName ||
-            `${txn.buyer?.firstName || ""} ${
-              txn.buyer?.lastName || ""
-            }`.trim() ||
-            "N/A",
-          buyerEmail: txn.buyer?.email || txn.buyerEmail || "N/A",
-          amount: txn.amount || txn.totalAmount || 0,
-          status: txn.status || "N/A",
-          paymentStatus: txn.paymentStatus || "N/A",
-          date: txn.date || txn.createdAt || "",
-        })
-      );
+      const mappedTransactions: Transaction[] = data.transactions.map((txn: any) => ({
+        _id: txn._id,
+        buyerName: txn.buyerName || "N/A",
+        buyerEmail: txn.buyerEmail || "N/A",
+        amount: txn.amount || 0,
+        status: txn.status || "N/A",
+        paymentStatus: txn.paymentStatus || "N/A",
+        date: txn.date || "",
+      }));
 
       setTransactions(mappedTransactions);
       setTotalPages(Math.ceil(data.total / limit));
@@ -77,14 +68,14 @@ export default function TransactionList() {
     fetchTransactions();
   }, [page]);
 
-  // Handle filter submission
+  // Filter submission
   const handleFilterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPage(1);
     fetchTransactions(1, search, statusFilter, paymentStatusFilter);
   };
 
-  // Reset all filters
+  // Reset filters
   const handleReset = () => {
     setSearch("");
     setStatusFilter("");
@@ -93,10 +84,9 @@ export default function TransactionList() {
     fetchTransactions(1, "", "", "");
   };
 
-  // Format date nicely
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "N/A";
-    return format(new Date(dateStr), "do MMM''yy"); // 2nd Jan'26
+    return format(new Date(dateStr), "do MMM''yy");
   };
 
   return (
@@ -113,6 +103,7 @@ export default function TransactionList() {
           onChange={(e) => setSearch(e.target.value)}
           className="border border-gray-300 rounded-md px-3 py-2 flex-1 min-w-[200px]"
         />
+
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -124,6 +115,7 @@ export default function TransactionList() {
           <option value="failed">Failed</option>
           <option value="new">New</option>
         </select>
+
         <select
           value={paymentStatusFilter}
           onChange={(e) => setPaymentStatusFilter(e.target.value)}
@@ -134,7 +126,7 @@ export default function TransactionList() {
           <option value="unpaid">Unpaid</option>
         </select>
 
-        {/* Filter Button */}
+        {/* Filter button */}
         <button
           type="submit"
           className="bg-green-700 text-white px-4 py-2 rounded-md"
@@ -142,7 +134,7 @@ export default function TransactionList() {
           Filter
         </button>
 
-        {/* Reset Button: visible only when any filter/search is active */}
+        {/* Reset button visible only if filters/search active */}
         {(search || statusFilter || paymentStatusFilter) && (
           <button
             type="button"
@@ -159,37 +151,24 @@ export default function TransactionList() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-green-700">
-              <th className="px-6 py-4 text-left font-semibold text-white flex items-center gap-1">
-                <RiExchangeDollarLine size={18} /> Buyer Name
-              </th>
-              <th className="px-6 py-4 text-left font-semibold text-white">
-                Email
-              </th>
-              <th className="px-6 py-4 text-left font-semibold text-white">
-                Amount
-              </th>
-              <th className="px-6 py-4 text-left font-semibold text-white">
-                Status
-              </th>
-              <th className="px-6 py-4 text-left font-semibold text-white">
-                Payment Status
-              </th>
-              <th className="px-6 py-4 text-left font-semibold text-white">
-                Date
-              </th>
-             
+              <th className="px-6 py-4 text-left font-semibold text-white flex items-center gap-1">Buyer Name</th>            
+              <th className="px-6 py-4 text-left font-semibold text-white">Email</th>
+              <th className="px-6 py-4 text-left font-semibold text-white">Amount</th>
+              <th className="px-6 py-4 text-left font-semibold text-white">Status</th>
+              <th className="px-6 py-4 text-left font-semibold text-white">Payment Status</th>
+              <th className="px-6 py-4 text-left font-semibold text-white">Date</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={7} className="text-center py-6">
+                <td colSpan={6} className="text-center py-6">
                   Loading...
                 </td>
               </tr>
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-6">
+                <td colSpan={6} className="text-center py-6">
                   No transactions found.
                 </td>
               </tr>
@@ -197,15 +176,11 @@ export default function TransactionList() {
               transactions.map((txn, index) => (
                 <tr
                   key={txn._id}
-                  className={`transition ${
-                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                  } hover:bg-green-50`}
+                  className={`transition ${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50`}
                 >
                   <td className="px-6 py-4 text-gray-700">{txn.buyerName}</td>
                   <td className="px-6 py-4 text-gray-700">{txn.buyerEmail}</td>
-                  <td className="px-6 py-4 text-gray-700">
-                    ${txn.amount.toFixed(2)}
-                  </td>
+                  <td className="px-6 py-4 text-gray-700">${txn.amount.toFixed(2)}</td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -230,10 +205,7 @@ export default function TransactionList() {
                       {txn.paymentStatus}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-700">
-                    {formatDate(txn.date)}
-                  </td>
-                 
+                  <td className="px-6 py-4 text-gray-700">{formatDate(txn.date)}</td>
                 </tr>
               ))
             )}
