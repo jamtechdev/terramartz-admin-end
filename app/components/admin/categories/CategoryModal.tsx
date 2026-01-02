@@ -27,7 +27,7 @@ export default function CategoryModal({
 
         <button
           onClick={onClose}
-          className="mt-4 text-gray-600 text-sm"
+          className="mt-4 text-gray-600 text-sm cursor-pointer"
         >
           Cancel
         </button>

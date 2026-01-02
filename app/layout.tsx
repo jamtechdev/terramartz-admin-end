@@ -1,3 +1,4 @@
+import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./context/AuthContext";
 import "./globals.css";
 
@@ -11,6 +12,15 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           {children}
+          {/* Toasts */}
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            pauseOnHover
+          />
         </AuthProvider>
       </body>
     </html>

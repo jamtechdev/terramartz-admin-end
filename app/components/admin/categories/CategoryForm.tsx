@@ -26,7 +26,7 @@ export default function CategoryForm({
         required
       />
 
-      <button className="bg-green-600 text-white px-4 py-2 rounded w-full">
+      <button className="bg-green-600 text-white px-4 py-2 rounded w-full cursor-pointer">
         Save
       </button>
     </form>

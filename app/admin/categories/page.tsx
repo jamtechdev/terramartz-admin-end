@@ -1,44 +1,139 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
 import CategoryModal from "@/app/components/admin/categories/CategoryModal";
 import CategoryTable from "@/app/components/admin/categories/CategoryTable";
-import { useState } from "react";
+import { categoriesService } from "@/app/services/category.service";
+import DeleteConfirmModal from "@/app/components/common/DeleteConfirmModal";
+import { toast } from "react-toastify";
 
-const mockCategories = [
-  { id: "1", name: "Fruits" },
-  { id: "2", name: "Vegetables" },
-];
+export type Category = {
+  _id: string;
+  name: string;
+};
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState(mockCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [open, setOpen] = useState(false);
-  const [editCategory, setEditCategory] = useState<unknown>(null);
+  const [editCategory, setEditCategory] = useState<Category | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [page, setPage] = useState(1);
+  const LIMIT = 5; // categories per page
 
+  // ======================
+  // FETCH CATEGORIES
+  // ======================
+  const fetchCategories = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await categoriesService.getCategories();
+
+      if (res?.status === "success") {
+        setCategories(res.categories || []);
+      }
+    } catch (error) {
+      console.error("Failed to load categories", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  // const fetchCategories = useCallback(async () => {
+  //   try {
+  //     setLoading(true);
+
+  //     const res = await categoriesService.getCategories(page, LIMIT);
+
+  //     if (res?.status === "success") {
+  //       setCategories(res.categories || []);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to load categories", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [page]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  // ======================
+  // ADD
+  // ======================
   const handleAdd = () => {
     setEditCategory(null);
     setOpen(true);
   };
 
-  const handleEdit = (cat: any) => {
-    setEditCategory(cat);
+  // ======================
+  // EDIT
+  // ======================
+  const handleEdit = (category: Category) => {
+    setEditCategory(category);
     setOpen(true);
   };
 
-  const handleSave = (name: string) => {
-    if (editCategory) {
-      setCategories(
-        categories.map((c) => (c.id === editCategory.id ? { ...c, name } : c))
-      );
-    } else {
-      setCategories([...categories, { id: Date.now().toString(), name }]);
+  // ======================
+  // SAVE (ADD / UPDATE)
+  // ======================
+  const handleSave = async (name: string) => {
+    try {
+      if (editCategory) {
+        const res = await categoriesService.updateCategory(editCategory._id, {
+          name,
+        });
+
+        if (res?.status === "success") {
+          toast.success("Category updated successfully.");
+          fetchCategories();
+        } else {
+          toast.error("Unable to update category.");
+        }
+      } else {
+        const res = await categoriesService.addCategory({ name });
+
+        if (res?.status === "success") {
+          toast.success("Category added successfully.");
+          fetchCategories();
+        } else {
+          toast.error("Unable to add category.");
+        }
+      }
+    } catch (error) {
+      console.error("Save failed", error);
+      toast.error("Something went wrong.");
+    } finally {
+      setOpen(false);
     }
-    setOpen(false);
   };
 
+  // ======================
+  // DELETE
+  // ======================
   const handleDelete = (id: string) => {
-    if (confirm("Delete this category?")) {
-      setCategories(categories.filter((c) => c.id !== id));
+    setDeleteId(id);
+  };
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      setDeleting(true);
+      const res = await categoriesService.deleteCategory(deleteId);
+
+      if (res?.status === "success") {
+        toast.success("Category deleted successfully.");
+        fetchCategories();
+      } else {
+        toast.error("Unable to delete category.");
+      }
+    } catch (error) {
+      console.error("Delete failed", error);
+      toast.error("Something went wrong.");
+    } finally {
+      setDeleting(false);
+      setDeleteId(null);
     }
   };
 
@@ -48,17 +143,21 @@ export default function CategoriesPage() {
         <h1 className="text-2xl font-bold">Categories</h1>
         <button
           onClick={handleAdd}
-          className="bg-green-600 text-white px-4 py-2 rounded"
+          className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer"
         >
           + Add Category
         </button>
       </div>
 
-      <CategoryTable
-        categories={categories}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {loading ? (
+        <p className="text-gray-500">Loading categories...</p>
+      ) : (
+        <CategoryTable
+          categories={categories}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
 
       {open && (
         <CategoryModal
@@ -67,6 +166,14 @@ export default function CategoriesPage() {
           onSave={handleSave}
         />
       )}
+      <DeleteConfirmModal
+        open={!!deleteId}
+        title="Delete Category"
+        message="This action cannot be undone. Are you sure?"
+        loading={deleting}
+        onCancel={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
