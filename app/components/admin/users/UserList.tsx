@@ -43,7 +43,7 @@ const dummyUsers: User[] = [
 
 export default function UserList() {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-y-hidden overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm w-full">
       <table className="min-w-full text-sm">
         <thead>
           <tr className="bg-green-700">

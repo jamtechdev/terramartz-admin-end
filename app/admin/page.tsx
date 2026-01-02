@@ -13,25 +13,29 @@ export default function AdminDashboard() {
       title: "Total Orders",
       value: 1523,
       icon: <FaBoxes size={25} className="text-white" />,
-      Color: "green-500",
+      BgColor: "bg-green-500",
+      BorderColor:"border-green-500"
     },
     {
       title: "Revenue",
       value: "$45,300",
       icon: <FaDollarSign size={25} className="text-white" />,
-      Color: "blue-500",
+      BgColor: "bg-blue-500",
+      BorderColor:"border-blue-500"
     },
     {
       title: "Active Users",
       value: 342,
       icon: <FaUsers size={25} className="text-white" />,
-      Color: "yellow-500",
+      BgColor: "bg-yellow-500",
+      BorderColor:"border-yellow-500"
     },
     {
       title: "Products in Stock",
       value: 128,
       icon: <FaAppleAlt size={25} className="text-white" />,
-      Color: "red-500",
+      BgColor: "bg-red-500",
+      BorderColor:"border-red-500"
     },
   ];
 const topProducts: readonly Product[]= [
@@ -79,7 +83,8 @@ const topProducts: readonly Product[]= [
             title={stat.title}
             value={stat.value}
             icon={stat.icon}
-            Color={stat.Color}
+            BorderColor={stat.BorderColor}
+            BgColor={stat.BgColor}
           />
         ))}
       </div>
@@ -92,7 +97,7 @@ const topProducts: readonly Product[]= [
           <h2 className="text-xl font-bold mb-4 text-green-700">
             Connected Users
           </h2>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-y-hidden overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm w-full">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="bg-green-700">

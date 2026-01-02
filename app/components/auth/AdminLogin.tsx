@@ -16,14 +16,14 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       <div
-        className="hidden md:flex flex-col justify-end p-16 text-white relative
+        className="flex flex-col justify-end lg:p-16 p-8 text-white relative
   bg-[url('/images/auth-bg.jpg')] bg-cover bg-center"
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/50 to-transparent" />
         <div className="relative z-10">
-          <h1 className="text-5xl font-bold mb-2">TerraMartz Admin Console</h1>
+          <h1 className="lg:text-5xl text-3xl font-bold mb-2">TerraMartz Admin Console</h1>
           <p className="text-lg opacity-90 mb-6">
             Monitor operations, manage partners, and control inventory from one
             place.
@@ -37,7 +37,7 @@ export default function AdminLogin() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center bg-gray-50">
+      <div className="flex lg:items-center justify-center bg-gray-50 p-6">
         <div className="w-full max-w-md">
           <div className="relative w-[100px] h-[100px] mb-8">
             <Image
@@ -88,7 +88,7 @@ export default function AdminLogin() {
 
             <button
               onClick={handleLogin}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition"
+              className="w-full bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition cursor-pointer font-semibold"
             >
               Login
             </button>

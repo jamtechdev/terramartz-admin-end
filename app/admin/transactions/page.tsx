@@ -5,9 +5,7 @@ export default function TransactionPage() {
   return (
     <div>
       <DashboardHeader title="Transaction Management" />
-      <div className="mt-6">
         <TransactionList />
-      </div>
     </div>
   );
 }

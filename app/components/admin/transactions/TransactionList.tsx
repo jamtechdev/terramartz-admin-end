@@ -94,20 +94,20 @@ export default function TransactionList() {
       {/* Search & Filters */}
       <form
         onSubmit={handleFilterSubmit}
-        className="flex flex-wrap items-center gap-2 w-full max-w-2xl"
+        className="flex flex-wrap items-center gap-2 w-full"
       >
         <input
           type="text"
           placeholder="Search by buyer name or email"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 flex-1 min-w-[200px]"
+          className="px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500 min-w-[200px]"
         />
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2"
+          className="px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         >
           <option value="">All Status</option>
           <option value="processing">Processing</option>
@@ -119,22 +119,20 @@ export default function TransactionList() {
         <select
           value={paymentStatusFilter}
           onChange={(e) => setPaymentStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2"
+          className="px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         >
           <option value="">All Payment Status</option>
           <option value="paid">Paid</option>
           <option value="unpaid">Unpaid</option>
         </select>
 
-        {/* Filter button */}
         <button
           type="submit"
-          className="bg-green-700 text-white px-4 py-2 rounded-md"
+          className="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition cursor-pointer font-semibold"
         >
           Filter
         </button>
 
-        {/* Reset button visible only if filters/search active */}
         {(search || statusFilter || paymentStatusFilter) && (
           <button
             type="button"
@@ -147,7 +145,7 @@ export default function TransactionList() {
       </form>
 
       {/* Transactions Table */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-y-hidden overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm w-full">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-green-700">
@@ -162,13 +160,13 @@ export default function TransactionList() {
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={6} className="text-center py-6">
+                <td colSpan={6} className="text-center text-black py-6">
                   Loading...
                 </td>
               </tr>
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-6">
+                <td colSpan={6} className="text-center text-black py-6">
                   No transactions found.
                 </td>
               </tr>
@@ -214,11 +212,11 @@ export default function TransactionList() {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-end gap-2 mt-4">
+      <div className="flex items-center justify-end gap-2 mt-4 text-black">
         <button
           disabled={page === 1}
           onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          className="px-3 py-1 border rounded-md disabled:opacity-50"
+          className="bg-green-700 text-white px-4 py-2 text-sm rounded-lg hover:bg-green-600 transition cursor-pointer font-semibold disabled:opacity-50"
         >
           Prev
         </button>
@@ -228,13 +226,11 @@ export default function TransactionList() {
         <button
           disabled={page === totalPages}
           onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-          className="px-3 py-1 border rounded-md disabled:opacity-50"
+          className="bg-green-700 text-white px-4 py-2 text-sm rounded-lg hover:bg-green-600 transition cursor-pointer font-semibold disabled:opacity-50"
         >
           Next
         </button>
       </div>
-
-      {error && <p className="text-red-600">{error}</p>}
     </div>
   );
 }

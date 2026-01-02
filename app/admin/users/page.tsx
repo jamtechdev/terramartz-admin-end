@@ -5,9 +5,7 @@ export default function UsersPage() {
   return (
     <div>
       <DashboardHeader title="User Management" />
-     <div className="mt-6">
        <UserList />
-     </div>
     </div>
   );
 }

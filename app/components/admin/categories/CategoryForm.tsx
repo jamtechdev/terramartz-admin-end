@@ -21,12 +21,12 @@ export default function CategoryForm({
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="w-full border p-2 rounded"
+        className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         placeholder="Category name"
         required
       />
 
-      <button className="bg-green-600 text-white px-4 py-2 rounded w-full cursor-pointer">
+      <button className="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition cursor-pointer font-semibold w-full">
         Save
       </button>
     </form>

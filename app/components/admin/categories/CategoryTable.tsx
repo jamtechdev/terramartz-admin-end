@@ -9,46 +9,58 @@ type Props = {
   onDelete: (id: string) => void;
 };
 
-export default function CategoryTable({
-  categories,
-  onEdit,
-  onDelete,
-}: Props) {
+export default function CategoryTable({ categories, onEdit, onDelete }: Props) {
   return (
-    <>
-    <table className="w-full bg-white rounded shadow">
-      <thead>
-        <tr className="border-b">
-          <th className="p-3 text-left">Name</th>
-          <th className="p-3 text-right">Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {categories.map((cat) => (
-          <tr key={cat._id} className="border-b">
-            <td className="p-3">{cat.name}</td>
-
-            <td className="p-3 text-right space-x-3">
-              <button
-                onClick={() => onEdit(cat)}
-                className="text-blue-600 cursor-pointer"
-              >
-                ✏️
-              </button>
-
-              <button
-                onClick={() => onDelete(cat._id)}
-                className="text-red-600 cursor-pointer"
-              >
-                🗑
-              </button>
-            </td>
+    <div className="overflow-y-hidden overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm w-full">
+      <table className="min-w-full text-sm">
+        <thead>
+          <tr className="bg-green-700">
+            <th className="px-6 py-4 text-left font-semibold text-white">
+              Name
+            </th>
+            <th className="px-6 py-4 text-left font-semibold text-white">
+              Actions
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-    
-    </>
+        </thead>
+
+        <tbody className="divide-y divide-gray-100">
+          {categories.length === 0 ? (
+            <tr>
+              <td colSpan={2} className="text-center text-black py-6">
+                No categories found.
+              </td>
+            </tr>
+          ) : (
+            categories.map((cat, index) => (
+              <tr
+                key={cat._id}
+                className={`transition ${
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                } hover:bg-green-50`}
+              >
+                <td className="px-6 py-4 text-gray-700">{cat.name}</td>
+
+                <td className="px-6 py-4 text-gray-700 flex gap-3">
+                  <button
+                    onClick={() => onEdit(cat)}
+                    className="text-blue-600 cursor-pointer"
+                  >
+                    ✏️
+                  </button>
+
+                  <button
+                    onClick={() => onDelete(cat._id)}
+                    className="text-red-600 cursor-pointer"
+                  >
+                    🗑
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }

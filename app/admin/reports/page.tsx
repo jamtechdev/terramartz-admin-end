@@ -1,7 +1,7 @@
 "use client";
 
+import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
 import InventoryReport from "@/app/components/reports/InventoryReport";
-import ReportsHeader from "@/app/components/reports/ReportsHeader";
 import SalesReport from "@/app/components/reports/SalesReport";
 
 export default function ReportsPage() {
@@ -10,7 +10,7 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <ReportsHeader title="Reports" />
+      <DashboardHeader title="Reports"/>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SalesReport

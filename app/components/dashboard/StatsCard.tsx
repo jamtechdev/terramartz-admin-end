@@ -4,22 +4,24 @@ type StatsCardProps = {
   title: string;
   value: number | string;
   icon?: React.ReactNode;
-  Color?: string; // Tailwind border color class
+  BorderColor?: string; 
+   BgColor?: string; 
 };
 
 export default function StatsCard({
   title,
   value,
   icon,
-  Color,
+  BorderColor,
+  BgColor
 }: StatsCardProps) {
   return (
     <div
-      className={`relative flex items-center gap-4 p-5 bg-white rounded-xl border-l-4 border-${Color}
+      className={`relative flex items-center gap-4 p-5 bg-white rounded-xl border-l-4 ${BorderColor}
       shadow-sm hover:shadow-md transition-all duration-300`}
     >
       {icon && (
-        <div className={`flex items-center justify-center w-14 h-14 rounded-lg bg-${Color} text-gray-700`}>
+        <div className={`flex items-center justify-center w-14 h-14 rounded-lg ${BgColor} text-gray-700`}>
           {icon}
         </div>
       )}

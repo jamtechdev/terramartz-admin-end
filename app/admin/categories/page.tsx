@@ -6,6 +6,7 @@ import CategoryTable from "@/app/components/admin/categories/CategoryTable";
 import { categoriesService } from "@/app/services/category.service";
 import DeleteConfirmModal from "@/app/components/common/DeleteConfirmModal";
 import { toast } from "react-toastify";
+import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
 
 export type Category = {
   _id: string;
@@ -138,12 +139,12 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-bold">Categories</h1>
+    <>
+      <div className="flex items-center justify-between mb-6">
+        <DashboardHeader title="Categories"/>
         <button
           onClick={handleAdd}
-          className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer"
+          className="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition cursor-pointer font-semibold"
         >
           + Add Category
         </button>
@@ -174,6 +175,6 @@ export default function CategoriesPage() {
         onCancel={() => setDeleteId(null)}
         onConfirm={confirmDelete}
       />
-    </div>
+    </>
   );
 }

@@ -1,23 +1,29 @@
 "use client";
 
 import Image from "next/image";
-import { RiSearchLine } from "react-icons/ri";
+import { RiSearchLine, RiMenuLine } from "react-icons/ri";
 
-export default function AdminHeader() {
+export default function AdminHeader({
+  onMenuClick,
+}: {
+  onMenuClick: () => void;
+}) {
   return (
-    <div className="px-6 py-4 justify-between bg-white shadow-sm flex">
-      <div className="w-full max-w-md">
-        <div className="relative group">
-          <RiSearchLine
-            size={20}
-            className="absolute left-4 top-1/2 -translate-y-1/2
-                     text-gray-400
-                     group-focus-within:text-green-500
-                     transition-colors duration-200"
-          />
+    <div className="px-6 py-4 bg-white shadow-sm flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        {/* Mobile menu */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
+        >
+          <RiMenuLine className="text-black" size={22} />
+        </button>
 
+        {/* Search */}
+        <div className="relative w-full max-w-xl">
+          <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
-            type="text"
+           type="text"
             placeholder="Search folders, files, records..."
             className="w-full rounded-xl
                      bg-gray-100
@@ -31,6 +37,8 @@ export default function AdminHeader() {
           />
         </div>
       </div>
+
+      {/* User */}
       <div className="flex items-center gap-3">
         <Image
           src="/images/user-avatar.png"
@@ -39,9 +47,8 @@ export default function AdminHeader() {
           height={36}
           className="rounded-full w-10 h-10 object-cover"
         />
-
         <div className="hidden sm:block">
-          <p className="text-sm font-medium text-black">John Doe</p>
+          <p className="text-sm text-black font-medium">John Doe</p>
           <p className="text-xs text-gray-400">johndoe@email.com</p>
         </div>
       </div>

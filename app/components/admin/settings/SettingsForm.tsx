@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import DashboardHeader from "../../dashboard/DashboardHeader";
+import DashboardCard from "../../common/DashboardCard";
 
 export default function SettingsForm() {
   const [siteName, setSiteName] = useState("My Awesome Admin");
@@ -18,76 +20,78 @@ export default function SettingsForm() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-green-700">User Settings</h2>
+    <div className="max-w-xl mx-auto">
+      <DashboardCard>
+        <DashboardHeader title="Setting" />
+        <div className="space-y-4">
+          <div>
+            <label className="text-black block text-lg">Site Name</label>
+            <input
+              type="text"
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+              className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
+            />
+          </div>
 
-      <div className="space-y-4">
-        {/* Site Name */}
-        <div>
-          <label className="block mb-1 font-medium">Site Name</label>
-          <input
-            type="text"
-            value={siteName}
-            onChange={(e) => setSiteName(e.target.value)}
-            className="border p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-        </div>
+          {/* Admin Email */}
+          <div>
+            <label className="text-black block text-lg">Admin Email</label>
+            <input
+              type="email"
+              value={adminEmail}
+              onChange={(e) => setAdminEmail(e.target.value)}
+              className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
+            />
+          </div>
 
-        {/* Admin Email */}
-        <div>
-          <label className="block mb-1 font-medium">Admin Email</label>
-          <input
-            type="email"
-            value={adminEmail}
-            onChange={(e) => setAdminEmail(e.target.value)}
-            className="border p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-        </div>
+          {/* Password */}
+          <div>
+            <label className="text-black block text-lg">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Leave blank to keep current password"
+              className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
+            />
+          </div>
 
-        {/* Password */}
-        <div>
-          <label className="block mb-1 font-medium">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Leave blank to keep current password"
-            className="border p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-        </div>
+          {/* Theme */}
+          <div>
+            <label className="text-black block text-lg">Theme</label>
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
+            >
+              <option>Light</option>
+              <option>Dark</option>
+            </select>
+          </div>
 
-        {/* Theme */}
-        <div>
-          <label className="block mb-1 font-medium">Theme</label>
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="border p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+          {/* Notifications */}
+          <div className="flex items-center space-x-2">
+            <label className="flex items-center gap-2 text-black cursor-pointer">
+              <input
+                checked={notifications}
+                onChange={() => setNotifications(!notifications)}
+                type="checkbox"
+                className="h-4 w-4 accent-green-600"
+              />
+              Enable Notifications
+            </label>
+          </div>
+
+          {/* Save Button */}
+          <button
+            onClick={handleSave}
+            className="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition cursor-pointer font-semibold"
           >
-            <option>Light</option>
-            <option>Dark</option>
-          </select>
+            Save Settings
+          </button>
         </div>
-
-        {/* Notifications */}
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={notifications}
-            onChange={() => setNotifications(!notifications)}
-            className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-          />
-          <label className="font-medium">Enable Notifications</label>
-        </div>
-
-        {/* Save Button */}
-        <button
-          onClick={handleSave}
-          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold shadow transition-colors"
-        >
-          Save Settings
-        </button>
-      </div>
+      </DashboardCard>
     </div>
   );
 }
