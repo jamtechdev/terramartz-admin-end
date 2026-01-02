@@ -14,6 +14,7 @@ import {
   RiLogoutBoxRLine,
   RiMenuLine,
   RiFolderLine,
+  RiExchangeDollarLine,
 } from "react-icons/ri";
 import Image from "next/image";
 
@@ -30,6 +31,11 @@ export default function AdminSidebar() {
       name: "Categories",
       href: "/admin/categories",
       icon: <RiFolderLine size={20} />,
+    },
+    {
+      name: "Transactions",
+      href: "/admin/transactions",
+      icon: <RiExchangeDollarLine size={20} />,
     },
     {
       name: "Settings",
@@ -83,9 +89,8 @@ export default function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-3">
         {menuItems.map((item) => {
-           const isActive =
-            pathname === item.href ||
-            pathname.startsWith(item.href + "/admin");
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/admin");
           return (
             <Link
               key={item.name}
