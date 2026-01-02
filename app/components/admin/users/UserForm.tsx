@@ -1,7 +1,7 @@
 "use client";
 
-export type User = {
-  id: string;
+type User = {
+  id?: string;
   name: string;
   email: string;
   role: string;
@@ -12,74 +12,55 @@ type UserFormProps = {
   user: User;
   onChange: (user: User) => void;
   onSave: () => void;
-  title: string;
+  title?: string;
 };
 
-export default function UserForm({
-  user,
-  onChange,
-  onSave,
-  title,
-}: UserFormProps) {
+export default function UserForm({ user, onChange, onSave, title }: UserFormProps) {
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded shadow">
-      <h2 className="text-xl font-bold mb-4">{title}</h2>
-
-      <label className="block mb-2">
-        Name:
+    <div className="max-w-lg mt-6">
+      <h2 className="text-2xl font-bold mb-4 text-green-700">{title || "User Form"}</h2>
+      <div className="space-y-4">
         <input
           type="text"
           value={user.name}
           onChange={(e) => onChange({ ...user, name: e.target.value })}
-          className="w-full border p-2 rounded mt-1"
+          className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
+          placeholder="Name"
         />
-      </label>
-
-      <label className="block mb-2">
-        Email:
         <input
           type="email"
           value={user.email}
           onChange={(e) => onChange({ ...user, email: e.target.value })}
-          className="w-full border p-2 rounded mt-1"
+          className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
+          placeholder="Email"
         />
-      </label>
-
-      <label className="block mb-2">
-        Role:
         <select
           value={user.role}
           onChange={(e) => onChange({ ...user, role: e.target.value })}
-          className="w-full border p-2 rounded mt-1"
+          className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         >
-          <option value="User">User</option>
-          <option value="Admin">Admin</option>
+          <option>User</option>
+          <option>Admin</option>
+          <option>Manager</option>
         </select>
-      </label>
-
-      <label className="block mb-4">
-        Status:
         <select
           value={user.status}
           onChange={(e) =>
-            onChange({
-              ...user,
-              status: e.target.value as "Active" | "Inactive",
-            })
+            onChange({ ...user, status: e.target.value as "Active" | "Inactive" })
           }
-          className="w-full border p-2 rounded mt-1"
+          className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         >
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
+          <option>Active</option>
+          <option>Inactive</option>
         </select>
-      </label>
 
-      <button
-        onClick={onSave}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        Save
-      </button>
+        <button
+          onClick={onSave}
+          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold"
+        >
+          Save
+        </button>
+      </div>
     </div>
   );
 }

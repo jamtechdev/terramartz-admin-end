@@ -1,10 +1,13 @@
 import UserList from "@/app/components/admin/users/UserList";
+import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
 
 export default function UsersPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">User Management</h1>
-      <UserList />
+      <DashboardHeader title="User Management" />
+     <div className="mt-6">
+       <UserList />
+     </div>
     </div>
   );
 }
