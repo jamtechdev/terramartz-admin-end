@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -7,6 +8,8 @@ import { categoriesService } from "@/app/services/category.service";
 import DeleteConfirmModal from "@/app/components/common/DeleteConfirmModal";
 import { toast } from "react-toastify";
 import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
+import { useAuth } from "@/app/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export type Category = {
   _id: string;
@@ -20,41 +23,34 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [page, setPage] = useState(1);
-  const LIMIT = 5; // categories per page
+
+  const { token } = useAuth();
+  const router = useRouter();
 
   // ======================
   // FETCH CATEGORIES
   // ======================
   const fetchCategories = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await categoriesService.getCategories();
+    if (!token) return;
 
-      if (res?.status === "success") {
-        setCategories(res.categories || []);
+    setLoading(true);
+
+    const res = await categoriesService.getCategories(token);
+
+    if (!res.success) {
+      toast.error(res.message);
+
+      if (res.statusCode === 401) {
+        router.push("/admin/login");
       }
-    } catch (error) {
-      console.error("Failed to load categories", error);
-    } finally {
+
       setLoading(false);
+      return;
     }
-  }, []);
-  // const fetchCategories = useCallback(async () => {
-  //   try {
-  //     setLoading(true);
 
-  //     const res = await categoriesService.getCategories(page, LIMIT);
-
-  //     if (res?.status === "success") {
-  //       setCategories(res.categories || []);
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to load categories", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [page]);
+    setCategories(res.data.categories || []);
+    setLoading(false);
+  }, [token, router]);
 
   useEffect(() => {
     fetchCategories();
@@ -80,34 +76,38 @@ export default function CategoriesPage() {
   // SAVE (ADD / UPDATE)
   // ======================
   const handleSave = async (name: string) => {
-    try {
-      if (editCategory) {
-        const res = await categoriesService.updateCategory(editCategory._id, {
-          name,
-        });
+    if (!token) return;
 
-        if (res?.status === "success") {
-          toast.success("Category updated successfully.");
-          fetchCategories();
-        } else {
-          toast.error("Unable to update category.");
-        }
-      } else {
-        const res = await categoriesService.addCategory({ name });
+    let res;
 
-        if (res?.status === "success") {
-          toast.success("Category added successfully.");
-          fetchCategories();
-        } else {
-          toast.error("Unable to add category.");
-        }
-      }
-    } catch (error) {
-      console.error("Save failed", error);
-      toast.error("Something went wrong.");
-    } finally {
-      setOpen(false);
+    if (editCategory) {
+      res = await categoriesService.updateCategory(
+        editCategory._id,
+        { name },
+        token
+      );
+    } else {
+      res = await categoriesService.addCategory({ name }, token);
     }
+
+    if (!res.success) {
+      toast.error(res.message);
+
+      // if (res.statusCode === 401) {
+      //   router.push("/admin/login");
+      // }
+
+      return;
+    }
+
+    toast.success(
+      editCategory
+        ? "Category updated successfully."
+        : "Category added successfully."
+    );
+
+    setOpen(false);
+    fetchCategories();
   };
 
   // ======================
@@ -116,32 +116,36 @@ export default function CategoriesPage() {
   const handleDelete = (id: string) => {
     setDeleteId(id);
   };
+
   const confirmDelete = async () => {
-    if (!deleteId) return;
+    if (!deleteId || !token) return;
 
-    try {
-      setDeleting(true);
-      const res = await categoriesService.deleteCategory(deleteId);
+    setDeleting(true);
 
-      if (res?.status === "success") {
-        toast.success("Category deleted successfully.");
-        fetchCategories();
-      } else {
-        toast.error("Unable to delete category.");
+    const res = await categoriesService.deleteCategory(deleteId, token);
+
+    if (!res.success) {
+      toast.error(res.message);
+
+      if (res.statusCode === 401) {
+        router.push("/admin/login");
       }
-    } catch (error) {
-      console.error("Delete failed", error);
-      toast.error("Something went wrong.");
-    } finally {
+
       setDeleting(false);
       setDeleteId(null);
+      return;
     }
+
+    toast.success("Category deleted successfully.");
+    setDeleting(false);
+    setDeleteId(null);
+    fetchCategories();
   };
 
   return (
     <>
       <div className="flex items-center justify-between mb-6">
-        <DashboardHeader title="Categories"/>
+        <DashboardHeader title="Categories" />
         <button
           onClick={handleAdd}
           className="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition cursor-pointer font-semibold"
@@ -167,6 +171,7 @@ export default function CategoriesPage() {
           onSave={handleSave}
         />
       )}
+
       <DeleteConfirmModal
         open={!!deleteId}
         title="Delete Category"

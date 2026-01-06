@@ -1,4 +1,5 @@
 import axios from "axios";
+import { handleApiError } from "../utils/handleApiError";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -12,47 +13,53 @@ export const categoriesService = {
 // ======================
 // GET ALL CATEGORIES
 // ======================
-async function getCategories() {
+async function getCategories(token: string) {
   try {
-    const response = await axios.get(`${BASE_URL}/api/admin/public-categories`, {
-      headers: {
-        // Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error occurred while fetching product categories",
-      error
+    const response = await axios.get(
+      `${BASE_URL}/api/admin/categories`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
     );
-    throw error;
+
+    return {
+      success: true as const,
+      data: response.data,
+    };
+  } catch (error) {
+    return handleApiError(error);
   }
 }
-
 
 // ======================
 // ADD CATEGORY
 // ======================
 async function addCategory(
   data: { name: string },
-  // token: string
+  token: string
 ) {
   try {
     const response = await axios.post(
-      `${BASE_URL}/api/admin/public-categories`,
+      `${BASE_URL}/api/admin/categories`,
       data,
       {
         headers: {
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        withCredentials: true,
       }
     );
-    return response.data;
+
+    return {
+      success: true as const,
+      data: response.data,
+    };
   } catch (error) {
-    console.error("Error occurred while adding category", error);
-    throw error;
+    return handleApiError(error);
   }
 }
 
@@ -62,45 +69,53 @@ async function addCategory(
 async function updateCategory(
   id: string,
   data: { name: string },
-  // token: string
+  token: string
 ) {
   try {
     const response = await axios.patch(
-      `${BASE_URL}/api/admin/public-categories/${id}`,
+      `${BASE_URL}/api/admin/categories/${id}`,
       data,
       {
         headers: {
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        withCredentials: true,
       }
     );
-    return response.data;
+
+    return {
+      success: true as const,
+      data: response.data,
+    };
   } catch (error) {
-    console.error("Error occurred while updating category", error);
-    throw error;
+    return handleApiError(error);
   }
 }
 
 // ======================
 // DELETE CATEGORY
 // ======================
-async function deleteCategory(id: string,
-  // token: string
+async function deleteCategory(
+  id: string,
+  token: string
 ) {
   try {
     const response = await axios.delete(
-      `${BASE_URL}/api/admin/public-categories/${id}`,
+      `${BASE_URL}/api/admin/categories/${id}`,
       {
         headers: {
-          // Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
+        withCredentials: true,
       }
     );
-    return response.data;
+
+    return {
+      success: true as const,
+      data: response.data,
+    };
   } catch (error) {
-    console.error("Error occurred while deleting category", error);
-    throw error;
+    return handleApiError(error);
   }
 }

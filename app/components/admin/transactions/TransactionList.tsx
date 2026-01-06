@@ -1,9 +1,11 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
 import { transactionService } from "@/app/services/transaction.service";
 import { format } from "date-fns";
+import { useAuth } from "@/app/context/AuthContext";
 
 type Transaction = {
   _id: string;
@@ -26,7 +28,7 @@ export default function TransactionList() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 5;
-
+  const { token } = useAuth();
   // Fetch transactions
   const fetchTransactions = async (
     pageNum = page,
@@ -34,17 +36,31 @@ export default function TransactionList() {
     statusTerm = statusFilter,
     paymentTerm = paymentStatusFilter
   ) => {
-    setLoading(true);
-    try {
-      const data = await transactionService.getAllTransactions(
-        pageNum,
-        limit,
-        searchTerm.trim(),
-        statusTerm,
-        paymentTerm
-      );
+    if (!token) return;
 
-      const mappedTransactions: Transaction[] = data.transactions.map((txn: any) => ({
+    setLoading(true);
+    setError("");
+
+    const res = await transactionService.getAllTransactions(
+      pageNum,
+      limit,
+      searchTerm.trim(),
+      statusTerm,
+      paymentTerm,
+      token
+    );
+
+    if (!res.success) {
+      // ✅ error message strictly from API response
+      setError(res.message || "");
+      setLoading(false);
+      return;
+    }
+
+    const data = res.data;
+
+    const mappedTransactions: Transaction[] = data.transactions.map(
+      (txn: any) => ({
         _id: txn._id,
         buyerName: txn.buyerName || "N/A",
         buyerEmail: txn.buyerEmail || "N/A",
@@ -52,16 +68,12 @@ export default function TransactionList() {
         status: txn.status || "N/A",
         paymentStatus: txn.paymentStatus || "N/A",
         date: txn.date || "",
-      }));
+      })
+    );
 
-      setTransactions(mappedTransactions);
-      setTotalPages(Math.ceil(data.total / limit));
-    } catch (err: any) {
-      console.error(err);
-      setError("Failed to fetch transactions");
-    } finally {
-      setLoading(false);
-    }
+    setTransactions(mappedTransactions);
+    setTotalPages(Math.ceil(data.total / limit));
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -149,12 +161,24 @@ export default function TransactionList() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-green-700">
-              <th className="px-6 py-4 text-left font-semibold text-white flex items-center gap-1">Buyer Name</th>            
-              <th className="px-6 py-4 text-left font-semibold text-white">Email</th>
-              <th className="px-6 py-4 text-left font-semibold text-white">Amount</th>
-              <th className="px-6 py-4 text-left font-semibold text-white">Status</th>
-              <th className="px-6 py-4 text-left font-semibold text-white">Payment Status</th>
-              <th className="px-6 py-4 text-left font-semibold text-white">Date</th>
+              <th className="px-6 py-4 text-left font-semibold text-white flex items-center gap-1">
+                Buyer Name
+              </th>
+              <th className="px-6 py-4 text-left font-semibold text-white">
+                Email
+              </th>
+              <th className="px-6 py-4 text-left font-semibold text-white">
+                Amount
+              </th>
+              <th className="px-6 py-4 text-left font-semibold text-white">
+                Status
+              </th>
+              <th className="px-6 py-4 text-left font-semibold text-white">
+                Payment Status
+              </th>
+              <th className="px-6 py-4 text-left font-semibold text-white">
+                Date
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -162,6 +186,12 @@ export default function TransactionList() {
               <tr>
                 <td colSpan={6} className="text-center text-black py-6">
                   Loading...
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={6} className="text-center text-black py-6">
+                  {error}
                 </td>
               </tr>
             ) : transactions.length === 0 ? (
@@ -174,11 +204,15 @@ export default function TransactionList() {
               transactions.map((txn, index) => (
                 <tr
                   key={txn._id}
-                  className={`transition ${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50`}
+                  className={`transition ${
+                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                  } hover:bg-green-50`}
                 >
                   <td className="px-6 py-4 text-gray-700">{txn.buyerName}</td>
                   <td className="px-6 py-4 text-gray-700">{txn.buyerEmail}</td>
-                  <td className="px-6 py-4 text-gray-700">${txn.amount.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    ${txn.amount.toFixed(2)}
+                  </td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -203,7 +237,9 @@ export default function TransactionList() {
                       {txn.paymentStatus}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-700">{formatDate(txn.date)}</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {formatDate(txn.date)}
+                  </td>
                 </tr>
               ))
             )}

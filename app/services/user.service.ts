@@ -4,30 +4,28 @@ import { handleApiError } from "../utils/handleApiError";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const transactionService = {
-  getAllTransactions,
+export const userService = {
+  getAllUsers,
 };
 
 // ======================
-// GET ALL USER TRANSACTIONS
+// GET ALL USERS
 // ======================
-async function getAllTransactions(
+async function getAllUsers(
   page = 1,
   limit = 5,
   search = "",
-  status = "",
-  paymentStatus = "",
+  role = "",
   token?: string
 ) {
   try {
     const params: any = { page, limit };
 
     if (search) params.search = search;
-    if (status) params.status = status;
-    if (paymentStatus) params.paymentStatus = paymentStatus;
+    if (role) params.role = role;
 
     const response = await axios.get(
-      `${BASE_URL}/api/admin/user-transactions`,
+      `${BASE_URL}/api/admin/users`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -40,7 +38,7 @@ async function getAllTransactions(
 
     return {
       success: true as const,
-      data: response.data, // { transactions, total, page, limit }
+      data: response.data, // { users, total, page, limit }
     };
   } catch (error) {
     return handleApiError(error);
