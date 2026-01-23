@@ -19,9 +19,9 @@ type TopProductsTableProps = {
 export default function TopProductsTable({ products }: TopProductsTableProps) {
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4 text-green-700">
-        Top Selling Products
-      </h2>
+        <h2 className="text-2xl font-bold mb-6 text-green-700">
+            Top Selling Products
+          </h2>
       <div className="overflow-y-hidden overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm w-full">
         <table className="min-w-full text-sm">
           <thead>
