@@ -15,6 +15,7 @@ import {
   RiFolderLine,
   RiExchangeDollarLine,
   RiTicketLine,
+  RiShieldCheckLine,
   RiCloseLine,
 } from "react-icons/ri";
 
@@ -33,6 +34,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
     { name: "Dashboard", href: "/admin", icon: <RiHomeLine size={20} /> },
     { name: "Users", href: "/admin/users", icon: <RiUserLine size={20} /> },
     { name: "Categories", href: "/admin/categories", icon: <RiFolderLine size={20} /> },
+    { name: "KYC Management", href: "/admin/kyc", icon: <RiShieldCheckLine size={20} /> },
     { name: "Transactions", href: "/admin/transactions", icon: <RiExchangeDollarLine size={20} /> },
     { name: "Tickets", href: "/admin/tickets", icon: <RiTicketLine size={20} /> },
     { name: "Reports", href: "/admin/reports", icon: <RiBarChartLine size={20} /> },
