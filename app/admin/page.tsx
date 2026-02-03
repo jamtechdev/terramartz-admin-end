@@ -8,74 +8,118 @@ import TopProductsTable, {
   Product,
 } from "../components/dashboard/TopProductsTable";
 import DashboardCard from "../components/common/DashboardCard";
-import RevenueDonutChart from "../components/charts/RevenueDonutChart";
 import SalesAnalytics from "../components/charts/SalesAnalyticsChart";
 import OrderStatusAreaChart from "../components/charts/OrderStatusAreaChart";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { dashboardService } from "../services/dashboard.service";
+import {
+  DashboardStatsApiResponse,
+  SectionFourApiResponse,
+  SectionFourResponse,
+  SectionThreeApiResponse,
+  SectionThreeResponse,
+  SectionTwoApiResponse,
+  SectionTwoResponse,
+  StatCard,
+} from "../types/admin-dashboard";
 
 export default function AdminDashboard() {
-  const stats = [
-    {
-      title: "Total Orders",
-      value: 1523,
-      icon: <FaBoxes size={40} className="text-white" />,
-      BgColor: "bg-green-500",
-      BorderColor: "border-green-500",
-    },
-    {
-      title: "Revenue",
-      value: "$45,300",
-      icon: <FaDollarSign size={40} className="text-white" />,
-      BgColor: "bg-blue-500",
-      BorderColor: "border-blue-500",
-    },
-    {
-      title: "Active Users",
-      value: 342,
-      icon: <FaUsers size={40} className="text-white" />,
-      BgColor: "bg-yellow-500",
-      BorderColor: "border-yellow-500",
-    },
-    {
-      title: "Products in Stock",
-      value: 128,
-      icon: <FaAppleAlt size={40} className="text-white" />,
-      BgColor: "bg-red-500",
-      BorderColor: "border-red-500",
-    },
-  ];
+  const [stats, setStats] = useState<StatCard[]>([]);
+  const [sectionTwoData, setSectionTwoData] =
+    useState<SectionTwoResponse | null>(null);
+  const [sectionThreeData, setSectionThreeData] =
+    useState<SectionThreeResponse | null>(null);
+  const [sectionFourData, setSectionFourData] =
+    useState<SectionFourResponse | null>(null);
 
-  const topProducts: readonly Product[] = [
-    {
-      id: 1,
-      name: "Organic Tomatoes",
-      sku: "TM-001",
-      category: "Vegetables",
-      sold: 320,
-      stock: 45,
-      price: 120,
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Fresh Apples",
-      sku: "AP-014",
-      category: "Fruits",
-      sold: 210,
-      stock: 8,
-      price: 180,
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Basmati Rice",
-      sku: "BR-210",
-      category: "Grains",
-      sold: 540,
-      stock: 0,
-      price: 980,
-      status: "Active",
-    },
-  ];
+  const { token } = useAuth();
+
+  const getStats = async () => {
+    if (!token) return;
+
+    const res = (await dashboardService.getSectionOne(
+      token,
+    )) as DashboardStatsApiResponse;
+
+    if (res.success) {
+      const mappedStats = [
+        {
+          title: "Total Orders",
+          value: res.data?.totalOrder,
+          icon: <FaBoxes size={40} className="text-white" />,
+          BgColor: "bg-green-500",
+          BorderColor: "border-green-500",
+        },
+        {
+          title: "Revenue",
+          value: "$" + res.data?.revenue,
+          icon: <FaDollarSign size={40} className="text-white" />,
+          BgColor: "bg-blue-500",
+          BorderColor: "border-blue-500",
+        },
+        {
+          title: "Active Users",
+          value: res.data?.activeUsers,
+          icon: <FaUsers size={40} className="text-white" />,
+          BgColor: "bg-yellow-500",
+          BorderColor: "border-yellow-500",
+        },
+        {
+          title: "Products in Stock",
+          value: res.data?.productInStock,
+          icon: <FaAppleAlt size={40} className="text-white" />,
+          BgColor: "bg-red-500",
+          BorderColor: "border-red-500",
+        },
+      ];
+
+      setStats(mappedStats);
+    }
+  };
+
+  const getSectionTwo = async () => {
+    if (!token) return;
+
+    const res = (await dashboardService.getSectionTwo(
+      token,
+    )) as SectionTwoApiResponse;
+
+    if (res.success) {
+      setSectionTwoData(res.data);
+    }
+  };
+
+  const getSectionThree = async () => {
+    if (!token) return;
+
+    const res = (await dashboardService.getSectionThree(
+      token,
+    )) as SectionThreeApiResponse;
+
+    if (res.success) {
+      setSectionThreeData(res.data);
+    }
+  };
+
+  const getSectionFour = async () => {
+    if (!token) return;
+
+    const res = (await dashboardService.getSectionFour(
+      token,
+    )) as SectionFourApiResponse;
+
+    if (res.success) {
+      setSectionFourData(res.data);
+    }
+  };
+
+  useEffect(() => {
+    getStats();
+    getSectionTwo();
+    getSectionThree();
+    getSectionFour();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -92,59 +136,56 @@ export default function AdminDashboard() {
           <h2 className="text-2xl font-bold mb-6 text-green-700">
             Recent Transactions
           </h2>
-          <div className="flex items-center justify-center gap-6">
-            <div className="flex-1">
-              <ul className="divide-y divide-gray-100">
-                <li className="flex items-center justify-between py-3 hover:bg-green-50 px-2 rounded-lg transition">
-                  <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full bg-green-600" />
-                    <span className="text-sm font-medium text-gray-800">
-                      Terramartz Express
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">
-                    $22.1k
-                  </span>
-                </li>
-
-                <li className="flex items-center justify-between py-3 hover:bg-green-50 px-2 rounded-lg transition">
-                  <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full bg-emerald-500" />
-                    <span className="text-sm font-medium text-gray-800">
-                      Vendor Self-Delivery
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">
-                    $16.2k
-                  </span>
-                </li>
-
-                <li className="flex items-center justify-between py-3 hover:bg-green-50 px-2 rounded-lg transition">
-                  <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full bg-lime-500" />
-                    <span className="text-sm font-medium text-gray-800">
-                      3PL Partners
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">
-                    $4.9k
-                  </span>
-                </li>
-
-                <li className="flex items-center justify-between py-3 hover:bg-green-50 px-2 rounded-lg transition">
-                  <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full bg-teal-500" />
-                    <span className="text-sm font-medium text-gray-800">
-                      Micro-Hub Fulfillment
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">
-                    $2.1k
-                  </span>
-                </li>
-              </ul>
-            </div>
-            <RevenueDonutChart />
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+            <table className="min-w-full text-sm whitespace-nowrap">
+              <thead>
+                <tr className="bg-green-700">
+                  <th className="px-6 py-4 text-left font-semibold text-white">
+                    Order ID
+                  </th>
+                  <th className="px-6 py-4 text-left font-semibold text-white">
+                    Amount
+                  </th>
+                  <th className="px-6 py-4 text-left font-semibold text-white">
+                    Payment Method
+                  </th>
+                  <th className="px-6 py-4 text-left font-semibold text-white">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {sectionTwoData?.recentPurchases
+                  ?.slice(0, 5)
+                  .map((purchase) => (
+                    <tr
+                      key={purchase.orderId}
+                      className="hover:bg-green-50 transition"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {purchase.orderId}
+                      </td>
+                      <td className="px-6 py-4 text-green-600 font-semibold">
+                        ${purchase.totalAmount.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {purchase.paymentMethod}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                            purchase.status === "paid"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {purchase.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
         </DashboardCard>
 
@@ -152,20 +193,20 @@ export default function AdminDashboard() {
           <h2 className="text-2xl font-bold mb-6 text-green-700">
             Monthly Revenue
           </h2>
-          <SalesAnalytics />
+          <SalesAnalytics data={sectionTwoData?.monthlyRevenue ?? []} />
         </DashboardCard>
 
         <DashboardCard>
           <h2 className="text-2xl font-bold mb-6 text-green-700">
             Order status
           </h2>
-          <OrderStatusAreaChart />
+          <OrderStatusAreaChart orderStats={sectionTwoData?.orderStats} />
         </DashboardCard>
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardCard>
-          <TopProductsTable products={topProducts} />
+          <TopProductsTable topProducts={sectionThreeData?.topProducts} />
         </DashboardCard>
 
         <DashboardCard>
@@ -196,35 +237,41 @@ export default function AdminDashboard() {
               </thead>
 
               <tbody className="divide-y divide-gray-100">
-                {[
-                  { name: "Kajjal Foods", status: "Pending" },
-                  { name: "Raju’s Mart", status: "Pending" },
-                  { name: "Mithani Spices", status: "Rejected" },
-                ].map((v) => (
-                  <tr key={v.name} className="hover:bg-green-50 transition">
+                {sectionThreeData?.vendorsApproval.slice(0, 3).map((vendor) => (
+                  <tr key={vendor._id} className="hover:bg-green-50 transition">
                     <td className="px-6 py-4 font-medium text-gray-900">
-                      {v.name}
+                      {vendor.vendorName}
                     </td>
-                    <td className="px-6 py-4 text-green-600">✔</td>
-                    <td className="px-6 py-4 text-green-600">✔</td>
+                    <td className="px-6 py-4 text-green-600">
+                      {vendor.hasLicense ? "✔" : "✘"}
+                    </td>
+                    <td className="px-6 py-4 text-green-600">
+                      {vendor.hasTaxId ? "✔" : "✘"}
+                    </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          v.status === "Pending"
+                          vendor.status === "Pending"
                             ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
+                            : vendor.status === "Approved"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
                         }`}
                       >
-                        {v.status}
+                        {vendor.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      <button className="text-sm font-medium text-green-600 hover:text-green-800">
-                        Approve
-                      </button>
-                      <button className="text-sm font-medium text-red-600 hover:text-red-800">
-                        Reject
-                      </button>
+                      {vendor.status === "Pending" && (
+                        <>
+                          <button className="text-sm font-medium text-green-600 hover:text-green-800">
+                            Approve
+                          </button>
+                          <button className="text-sm font-medium text-red-600 hover:text-red-800">
+                            Reject
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -234,7 +281,7 @@ export default function AdminDashboard() {
         </DashboardCard>
       </div>
 
-       <div className="mt-8 grid grid-cols-1 lg:grid-cols-1 gap-6">
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-1 gap-6">
         <DashboardCard>
           <h2 className="text-2xl font-bold mb-6 text-green-700">
             Vendor Performance Map
@@ -252,7 +299,6 @@ export default function AdminDashboard() {
         </DashboardCard>
       </div>
 
-
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardCard>
           <h2 className="text-2xl font-bold mb-6 text-green-700">
@@ -264,10 +310,10 @@ export default function AdminDashboard() {
               <thead>
                 <tr className="bg-green-700">
                   <th className="px-6 py-4 text-left font-semibold text-white">
-                    Transaction ID
+                    Order ID
                   </th>
                   <th className="px-6 py-4 text-left font-semibold text-white">
-                    User
+                    Buyer
                   </th>
                   <th className="px-6 py-4 text-left font-semibold text-white">
                     Total
@@ -282,44 +328,30 @@ export default function AdminDashboard() {
               </thead>
 
               <tbody className="divide-y divide-gray-100">
-                {[
-                  {
-                    id: "TMX4325",
-                    user: "Rahul Sharma",
-                    total: "$94.00",
-                    payment: "Wallet",
-                  },
-                  {
-                    id: "TMX4321",
-                    user: "Ananya Verma",
-                    total: "$54.00",
-                    payment: "PayPal",
-                  },
-                  {
-                    id: "TMX4328",
-                    user: "Aman Agul",
-                    total: "$26.00",
-                    payment: "Wallet",
-                  },
-                  {
-                    id: "TMX4327",
-                    user: "Aman Agul",
-                    total: "$26.00",
-                    payment: "Wallet",
-                  },
-                ].map((tx) => (
-                  <tr key={tx.id} className="hover:bg-green-50 transition">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {tx.id}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{tx.user}</td>
-                    <td className="px-6 py-4 text-green-600 font-semibold">
-                      {tx.total}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{tx.payment}</td>
-                    <td className="px-6 py-4 text-gray-500">Apr 24, 2025</td>
-                  </tr>
-                ))}
+                {sectionTwoData?.recentPurchases
+                  ?.slice(0, 4)
+                  .map((purchase) => (
+                    <tr
+                      key={purchase.orderId}
+                      className="hover:bg-green-50 transition"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {purchase.orderId}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {purchase.shippingAddress.email}
+                      </td>
+                      <td className="px-6 py-4 text-green-600 font-semibold">
+                        ${purchase.totalAmount.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {purchase.paymentMethod}
+                      </td>
+                      <td className="px-6 py-4 text-gray-500">
+                        {new Date(purchase.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -364,7 +396,7 @@ export default function AdminDashboard() {
                     delay: "2%",
                   },
                   {
-                    name: "HandyPack Couriers",
+                    name: "BlueForce Couriers",
                     orders: 96,
                     sla: "96%",
                     delay: "4%",
@@ -492,32 +524,13 @@ export default function AdminDashboard() {
               </thead>
 
               <tbody className="divide-y divide-gray-100">
-                {[
-                  {
-                    category: "Order Issue",
-                    open: 8,
-                    time: "1 hr",
-                    priority: "High",
-                  },
-                  {
-                    category: "Payment Issue",
-                    open: 5,
-                    time: "1.5 hr",
-                    priority: "Medium",
-                  },
-                  {
-                    category: "Vendor Support",
-                    open: 3,
-                    time: "4 hr",
-                    priority: "Low",
-                  },
-                ].map((t) => (
+                {sectionFourData?.supportTickets?.map((t) => (
                   <tr key={t.category} className="hover:bg-green-50 transition">
                     <td className="px-6 py-4 font-medium text-gray-900">
                       {t.category}
                     </td>
                     <td className="px-6 py-4 text-gray-700">{t.open}</td>
-                    <td className="px-6 py-4 text-gray-700">{t.time}</td>
+                    <td className="px-6 py-4 text-gray-700">{t.avgResponse}</td>
                     <td className="px-6 py-4 text-gray-700">{t.priority}</td>
                   </tr>
                 ))}
