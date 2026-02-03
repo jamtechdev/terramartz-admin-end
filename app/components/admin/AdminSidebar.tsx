@@ -18,6 +18,7 @@ import {
   RiShieldCheckLine,
   RiCloseLine,
 } from "react-icons/ri";
+import { FaUsersGear } from "react-icons/fa6";
 
 type Props = {
   mobileOpen: boolean;
@@ -46,7 +47,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
     {
       name: "Staffs",
       href: "/admin/staffs",
-      icon: <RiUserLine size={20} />,
+      icon: <FaUsersGear size={20} />,
       superAdminOnly: true, // ✅ Only Super Admin can see this
     },
     {
