@@ -45,7 +45,7 @@ export default function UserList() {
   const fetchUsers = async (
     pageNum = page,
     searchTerm = search,
-    roleTerm = roleFilter
+    roleTerm = roleFilter,
   ) => {
     if (!token) return;
 
@@ -57,7 +57,7 @@ export default function UserList() {
       limit,
       searchTerm.trim(),
       roleTerm,
-      token
+      token,
     );
 
     if (!res.success) {
@@ -81,9 +81,9 @@ export default function UserList() {
         user.role === "user"
           ? "Buyer"
           : user.role === "seller"
-          ? "Seller"
-          : "N/A",
-      date: user.createdAt || "",
+            ? "Seller"
+            : "N/A",
+      date: user.date || "",
     }));
 
     setUsers(mappedUsers);
@@ -200,9 +200,13 @@ export default function UserList() {
                     index % 2 === 0 ? "bg-white" : "bg-gray-50"
                   } hover:bg-green-50`}
                 >
-                  <td className="px-6 py-4">{user.name}</td>
-                  <td className="px-6 py-4">{user.email}</td>
-                  <td className="px-6 py-4">{user.phoneNumber}</td>
+                  <td className="px-6 py-4 text-gray-900 font-medium">
+                    {user.name}
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">{user.email}</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {user.phoneNumber}
+                  </td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -219,7 +223,9 @@ export default function UserList() {
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-6 py-4">{formatDate(user.date)}</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {formatDate(user.date)}
+                  </td>
                 </tr>
               ))
             )}

@@ -8,60 +8,66 @@ import { authService } from "@/app/services/auth.service";
 import { toast } from "react-toastify";
 
 export default function AdminLogin() {
-  const { login } = useAuth();
+  const { login, isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.preventDefault();
-  if (loading) return;
+  const [isLoading, setIsLoading] = useState(false);
 
-  setError("");
+  const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
 
-  if (!email.trim()) {
-    setError("Email is required");
-    return;
-  }
-
-  if (!password.trim()) {
-    setError("Password is required");
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const response = await authService.adminLogin({ email, password });
-
-    if (response?.status !== "success") {
-      setError("Unable to login");
+    if (isLoading) {
       return;
     }
 
-    const token = response?.token;
-    if (!token) {
-      setError("Invalid login response");
+    setError("");
+
+    if (!email.trim()) {
+      setError("Email is required");
       return;
     }
 
-    login(token);
-    toast.success("You have been logged in successfully.");
-    router.push("/admin");
+    if (!password.trim()) {
+      setError("Password is required");
+      return;
+    }
 
-  } catch (err: any) {
-    const message =
-      err?.response?.data?.message || "Invalid email or password";
-    setError(message);
-    toast.error(message);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setIsLoading(true);
+
+      const response = await authService.adminLogin({ email, password });
+
+      if (response?.status !== "success") {
+        setError("Unable to login");
+        return;
+      }
+
+      const token = response?.token;
+      const userData = response?.data?.user;
+
+      if (!token || !userData) {
+        setError("Invalid login response");
+        return;
+      }
+
+      login(token, userData);
+
+      toast.success("You have been logged in successfully.");
+
+      router.push("/admin");
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "Invalid email or password";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">

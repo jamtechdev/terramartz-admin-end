@@ -4,9 +4,7 @@ import { FaAppleAlt, FaDollarSign, FaUsers, FaBoxes } from "react-icons/fa";
 
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import StatsCard from "../components/dashboard/StatsCard";
-import TopProductsTable, {
-  Product,
-} from "../components/dashboard/TopProductsTable";
+import TopProductsTable from "../components/dashboard/TopProductsTable";
 import DashboardCard from "../components/common/DashboardCard";
 import SalesAnalytics from "../components/charts/SalesAnalyticsChart";
 import OrderStatusAreaChart from "../components/charts/OrderStatusAreaChart";
@@ -23,6 +21,7 @@ import {
   SectionTwoResponse,
   StatCard,
 } from "../types/admin-dashboard";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<StatCard[]>([]);
@@ -32,8 +31,23 @@ export default function AdminDashboard() {
     useState<SectionThreeResponse | null>(null);
   const [sectionFourData, setSectionFourData] =
     useState<SectionFourResponse | null>(null);
+  const { token, user, hasPermission, loading, isAuthenticated } = useAuth();
 
-  const { token } = useAuth();
+  const router = useRouter();
+
+  // Check if user has Dashboard access
+  useEffect(() => {
+    if (!loading && !hasPermission("Dashboard", "View")) {
+      router.push("/");
+    }
+  }, [loading, hasPermission, router]);
+
+  // ✅ Check if user has Dashboard access
+  useEffect(() => {
+    if (!loading && !hasPermission("Dashboard", "View")) {
+      router.push("/");
+    }
+  }, [loading, hasPermission, router]);
 
   const getStats = async () => {
     if (!token) return;
@@ -115,15 +129,44 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    getStats();
-    getSectionTwo();
-    getSectionThree();
-    getSectionFour();
-  }, []);
+    if (token && hasPermission("Dashboard", "View")) {
+      getStats();
+      getSectionTwo();
+      getSectionThree();
+      getSectionFour();
+    }
+  }, [token]);
+
+  // ✅ Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // ✅ Check permission before rendering
+  if (!hasPermission("Dashboard", "View")) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen">
       <DashboardHeader title="Dashboard" />
+
+      {/* ✅ Welcome Section with User Info */}
+      {user && (
+        <div className="mb-6 p-4 bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-white">
+            Welcome back, {user.name}! 👋
+          </h2>
+          <p className="text-green-100 mt-1">
+            You're logged in as{" "}
+            <span className="font-semibold">{user.role}</span>
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
         {stats.map((stat) => (
@@ -132,62 +175,65 @@ export default function AdminDashboard() {
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DashboardCard>
-          <h2 className="text-2xl font-bold mb-6 text-green-700">
-            Recent Transactions
-          </h2>
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="min-w-full text-sm whitespace-nowrap">
-              <thead>
-                <tr className="bg-green-700">
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Order ID
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Amount
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Payment Method
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {sectionTwoData?.recentPurchases
-                  ?.slice(0, 5)
-                  .map((purchase) => (
-                    <tr
-                      key={purchase.orderId}
-                      className="hover:bg-green-50 transition"
-                    >
-                      <td className="px-6 py-4 font-medium text-gray-900">
-                        {purchase.orderId}
-                      </td>
-                      <td className="px-6 py-4 text-green-600 font-semibold">
-                        ${purchase.totalAmount.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 text-gray-700">
-                        {purchase.paymentMethod}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            purchase.status === "paid"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-yellow-100 text-yellow-700"
-                          }`}
-                        >
-                          {purchase.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </DashboardCard>
+        {/* ✅ Only show if user has Payments permission */}
+        {hasPermission("Payments", "View") && (
+          <DashboardCard>
+            <h2 className="text-2xl font-bold mb-6 text-green-700">
+              Recent Transactions
+            </h2>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              <table className="min-w-full text-sm whitespace-nowrap">
+                <thead>
+                  <tr className="bg-green-700">
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Order ID
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Amount
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Payment Method
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {sectionTwoData?.recentPurchases
+                    ?.slice(0, 5)
+                    .map((purchase) => (
+                      <tr
+                        key={purchase.orderId}
+                        className="hover:bg-green-50 transition"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {purchase.orderId}
+                        </td>
+                        <td className="px-6 py-4 text-green-600 font-semibold">
+                          ${purchase.totalAmount.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {purchase.paymentMethod}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                              purchase.status === "paid"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-yellow-100 text-yellow-700"
+                            }`}
+                          >
+                            {purchase.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </DashboardCard>
+        )}
 
         <DashboardCard>
           <h2 className="text-2xl font-bold mb-6 text-green-700">
@@ -205,339 +251,371 @@ export default function AdminDashboard() {
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardCard>
-          <TopProductsTable topProducts={sectionThreeData?.topProducts} />
-        </DashboardCard>
+        {/* ✅ Only show if user has Products permission */}
+        {hasPermission("Products", "View") && (
+          <DashboardCard>
+            <TopProductsTable topProducts={sectionThreeData?.topProducts} />
+          </DashboardCard>
+        )}
 
-        <DashboardCard>
-          <h2 className="text-2xl font-bold mb-6 text-green-700">
-            Vendor Approval Queue
-          </h2>
+        {/* ✅ Only show if user has Vendors permission */}
+        {hasPermission("Vendors", "View") && (
+          <DashboardCard>
+            <h2 className="text-2xl font-bold mb-6 text-green-700">
+              Vendor Approval Queue
+            </h2>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="min-w-full text-sm whitespace-nowrap">
-              <thead>
-                <tr className="bg-green-700">
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Vendor
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    License
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Tax ID
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-right font-semibold text-white">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-100">
-                {sectionThreeData?.vendorsApproval.slice(0, 3).map((vendor) => (
-                  <tr key={vendor._id} className="hover:bg-green-50 transition">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {vendor.vendorName}
-                    </td>
-                    <td className="px-6 py-4 text-green-600">
-                      {vendor.hasLicense ? "✔" : "✘"}
-                    </td>
-                    <td className="px-6 py-4 text-green-600">
-                      {vendor.hasTaxId ? "✔" : "✘"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          vendor.status === "Pending"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : vendor.status === "Approved"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {vendor.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      {vendor.status === "Pending" && (
-                        <>
-                          <button className="text-sm font-medium text-green-600 hover:text-green-800">
-                            Approve
-                          </button>
-                          <button className="text-sm font-medium text-red-600 hover:text-red-800">
-                            Reject
-                          </button>
-                        </>
-                      )}
-                    </td>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              <table className="min-w-full text-sm whitespace-nowrap">
+                <thead>
+                  <tr className="bg-green-700">
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Vendor
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      License
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Tax ID
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-right font-semibold text-white">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DashboardCard>
+                </thead>
+
+                <tbody className="divide-y divide-gray-100">
+                  {sectionThreeData?.vendorsApproval
+                    .slice(0, 3)
+                    .map((vendor) => (
+                      <tr
+                        key={vendor._id}
+                        className="hover:bg-green-50 transition"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {vendor.vendorName}
+                        </td>
+                        <td className="px-6 py-4 text-green-600">
+                          {vendor.hasLicense ? "✔" : "✘"}
+                        </td>
+                        <td className="px-6 py-4 text-green-600">
+                          {vendor.hasTaxId ? "✔" : "✘"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                              vendor.status === "Pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : vendor.status === "Approved"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {vendor.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                          {vendor.status === "Pending" &&
+                            hasPermission("Vendors", "Full") && (
+                              <>
+                                <button className="text-sm font-medium text-green-600 hover:text-green-800">
+                                  Approve
+                                </button>
+                                <button className="text-sm font-medium text-red-600 hover:text-red-800">
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </DashboardCard>
+        )}
       </div>
 
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-1 gap-6">
-        <DashboardCard>
-          <h2 className="text-2xl font-bold mb-6 text-green-700">
-            Vendor Performance Map
-          </h2>
+      {/* ✅ Only show map if user has Vendors permission */}
+      {hasPermission("Vendors", "View") && (
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-1 gap-6">
+          <DashboardCard>
+            <h2 className="text-2xl font-bold mb-6 text-green-700">
+              Vendor Performance Map
+            </h2>
 
-          <div className="w-full h-[400px] rounded-xl overflow-hidden border border-white/10">
-            <iframe
-              title="Dummy Google Map"
-              src="https://maps.google.com/maps?q=New%20Delhi&t=&z=12&ie=UTF8&iwloc=&output=embed"
-              className="w-full h-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-        </DashboardCard>
-      </div>
+            <div className="w-full h-[400px] rounded-xl overflow-hidden border border-white/10">
+              <iframe
+                title="Dummy Google Map"
+                src="https://maps.google.com/maps?q=New%20Delhi&t=&z=12&ie=UTF8&iwloc=&output=embed"
+                className="w-full h-full"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </DashboardCard>
+        </div>
+      )}
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardCard>
-          <h2 className="text-2xl font-bold mb-6 text-green-700">
-            Recent Transactions
-          </h2>
+        {/* ✅ Only show if user has Payments permission */}
+        {hasPermission("Payments", "View") && (
+          <DashboardCard>
+            <h2 className="text-2xl font-bold mb-6 text-green-700">
+              Recent Transactions
+            </h2>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="min-w-full text-sm whitespace-nowrap">
-              <thead>
-                <tr className="bg-green-700">
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Order ID
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Buyer
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Total
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Payment
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Date
-                  </th>
-                </tr>
-              </thead>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              <table className="min-w-full text-sm whitespace-nowrap">
+                <thead>
+                  <tr className="bg-green-700">
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Order ID
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Buyer
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Total
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Payment
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Date
+                    </th>
+                  </tr>
+                </thead>
 
-              <tbody className="divide-y divide-gray-100">
-                {sectionTwoData?.recentPurchases
-                  ?.slice(0, 4)
-                  .map((purchase) => (
-                    <tr
-                      key={purchase.orderId}
-                      className="hover:bg-green-50 transition"
-                    >
+                <tbody className="divide-y divide-gray-100">
+                  {sectionTwoData?.recentPurchases
+                    ?.slice(0, 4)
+                    .map((purchase) => (
+                      <tr
+                        key={purchase.orderId}
+                        className="hover:bg-green-50 transition"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                          {purchase.orderId}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {purchase.shippingAddress.email}
+                        </td>
+                        <td className="px-6 py-4 text-green-600 font-semibold">
+                          ${purchase.totalAmount.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {purchase.paymentMethod}
+                        </td>
+                        <td className="px-6 py-4 text-gray-500">
+                          {new Date(purchase.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </DashboardCard>
+        )}
+
+        {/* ✅ Only show if user has Logistics permission */}
+        {hasPermission("Logistics", "View") && (
+          <DashboardCard>
+            <h2 className="text-2xl font-bold mb-6 text-green-700">
+              Delivery SLA Monitoring
+            </h2>
+
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              <table className="min-w-full text-sm whitespace-nowrap">
+                <thead>
+                  <tr className="bg-green-700">
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Partner
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Orders
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      SLA
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Delay Rate
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-gray-100">
+                  {[
+                    {
+                      name: "Terramartz Express",
+                      orders: 169,
+                      sla: "99%",
+                      delay: "1%",
+                    },
+                    {
+                      name: "QuickFleet Logistics",
+                      orders: 128,
+                      sla: "98%",
+                      delay: "2%",
+                    },
+                    {
+                      name: "BlueForce Couriers",
+                      orders: 96,
+                      sla: "96%",
+                      delay: "4%",
+                    },
+                    {
+                      name: "HandyPack Couriers",
+                      orders: 96,
+                      sla: "96%",
+                      delay: "4%",
+                    },
+                  ].map((sla) => (
+                    <tr key={sla.name} className="hover:bg-green-50 transition">
                       <td className="px-6 py-4 font-medium text-gray-900">
-                        {purchase.orderId}
+                        {sla.name}
                       </td>
-                      <td className="px-6 py-4 text-gray-700">
-                        {purchase.shippingAddress.email}
-                      </td>
+                      <td className="px-6 py-4 text-gray-700">{sla.orders}</td>
                       <td className="px-6 py-4 text-green-600 font-semibold">
-                        ${purchase.totalAmount.toFixed(2)}
+                        {sla.sla}
                       </td>
-                      <td className="px-6 py-4 text-gray-700">
-                        {purchase.paymentMethod}
-                      </td>
-                      <td className="px-6 py-4 text-gray-500">
-                        {new Date(purchase.createdAt).toLocaleDateString()}
+                      <td className="px-6 py-4 text-red-600 font-semibold">
+                        {sla.delay}
                       </td>
                     </tr>
                   ))}
-              </tbody>
-            </table>
-          </div>
-        </DashboardCard>
-
-        <DashboardCard>
-          <h2 className="text-2xl font-bold mb-6 text-green-700">
-            Delivery SLA Monitoring
-          </h2>
-
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="min-w-full text-sm whitespace-nowrap">
-              <thead>
-                <tr className="bg-green-700">
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Partner
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Orders
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    SLA
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Delay Rate
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-100">
-                {[
-                  {
-                    name: "Terramartz Express",
-                    orders: 169,
-                    sla: "99%",
-                    delay: "1%",
-                  },
-                  {
-                    name: "QuickFleet Logistics",
-                    orders: 128,
-                    sla: "98%",
-                    delay: "2%",
-                  },
-                  {
-                    name: "BlueForce Couriers",
-                    orders: 96,
-                    sla: "96%",
-                    delay: "4%",
-                  },
-                  {
-                    name: "HandyPack Couriers",
-                    orders: 96,
-                    sla: "96%",
-                    delay: "4%",
-                  },
-                ].map((sla) => (
-                  <tr key={sla.name} className="hover:bg-green-50 transition">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {sla.name}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{sla.orders}</td>
-                    <td className="px-6 py-4 text-green-600 font-semibold">
-                      {sla.sla}
-                    </td>
-                    <td className="px-6 py-4 text-red-600 font-semibold">
-                      {sla.delay}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DashboardCard>
+                </tbody>
+              </table>
+            </div>
+          </DashboardCard>
+        )}
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardCard>
-          <h2 className="text-2xl font-bold mb-6 text-green-700">
-            Vendor Alerts
-          </h2>
+        {/* ✅ Only show if user has Vendors permission */}
+        {hasPermission("Vendors", "View") && (
+          <DashboardCard>
+            <h2 className="text-2xl font-bold mb-6 text-green-700">
+              Vendor Alerts
+            </h2>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="min-w-full text-sm whitespace-nowrap">
-              <thead>
-                <tr className="bg-green-700">
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    User
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    ID
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Amount
-                  </th>
-                  <th className="px-6 py-4 text-right font-semibold text-white">
-                    Method
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {[
-                  {
-                    id: "TMX4325",
-                    total: "$94.00",
-                    payment: "Wallet",
-                  },
-                  {
-                    id: "TMX4321",
-                    total: "$54.00",
-                    payment: "PayPal",
-                  },
-                  {
-                    id: "TMX4329",
-                    total: "$26.00",
-                    payment: "Wallet",
-                  },
-                ].map((tx) => (
-                  <tr key={tx.id} className="hover:bg-green-50 transition">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-green-600 text-white flex items-center justify-center font-semibold">
-                          R
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            Rahul Sharma
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            rahul.sharma@example.com
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {tx.id}
-                    </td>
-                    <td className="px-6 py-4 text-green-600 font-semibold">
-                      {tx.total}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{tx.payment}</td>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              <table className="min-w-full text-sm whitespace-nowrap">
+                <thead>
+                  <tr className="bg-green-700">
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      User
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      ID
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Amount
+                    </th>
+                    <th className="px-6 py-4 text-right font-semibold text-white">
+                      Method
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DashboardCard>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {[
+                    {
+                      id: "TMX4325",
+                      total: "$94.00",
+                      payment: "Wallet",
+                    },
+                    {
+                      id: "TMX4321",
+                      total: "$54.00",
+                      payment: "PayPal",
+                    },
+                    {
+                      id: "TMX4329",
+                      total: "$26.00",
+                      payment: "Wallet",
+                    },
+                  ].map((tx) => (
+                    <tr key={tx.id} className="hover:bg-green-50 transition">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-green-600 text-white flex items-center justify-center font-semibold">
+                            R
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              Rahul Sharma
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              rahul.sharma@example.com
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {tx.id}
+                      </td>
+                      <td className="px-6 py-4 text-green-600 font-semibold">
+                        {tx.total}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">{tx.payment}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DashboardCard>
+        )}
 
-        <DashboardCard>
-          <h2 className="text-2xl font-bold mb-6 text-green-700">
-            Support Tickets
-          </h2>
+        {/* ✅ Only show if user has Support permission */}
+        {hasPermission("Support", "View") && (
+          <DashboardCard>
+            <h2 className="text-2xl font-bold mb-6 text-green-700">
+              Support Tickets
+            </h2>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="min-w-full text-sm whitespace-nowrap">
-              <thead>
-                <tr className="bg-green-700">
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Category
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Open
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Avg. Response
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-white">
-                    Priority
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-100">
-                {sectionFourData?.supportTickets?.map((t) => (
-                  <tr key={t.category} className="hover:bg-green-50 transition">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {t.category}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{t.open}</td>
-                    <td className="px-6 py-4 text-gray-700">{t.avgResponse}</td>
-                    <td className="px-6 py-4 text-gray-700">{t.priority}</td>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              <table className="min-w-full text-sm whitespace-nowrap">
+                <thead>
+                  <tr className="bg-green-700">
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Category
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Open
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Avg. Response
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-white">
+                      Priority
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DashboardCard>
+                </thead>
+
+                <tbody className="divide-y divide-gray-100">
+                  {sectionFourData?.supportTickets?.map((t) => (
+                    <tr
+                      key={t.category}
+                      className="hover:bg-green-50 transition"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {t.category}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">{t.open}</td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {t.avgResponse}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700">{t.priority}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DashboardCard>
+        )}
       </div>
     </div>
   );

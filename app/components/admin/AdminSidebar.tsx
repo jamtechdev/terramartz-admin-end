@@ -25,21 +25,82 @@ type Props = {
 };
 
 export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
-  const { logout } = useAuth();
+  const { logout, user, hasPermission } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
-    { name: "Dashboard", href: "/admin", icon: <RiHomeLine size={20} /> },
-    { name: "Users", href: "/admin/users", icon: <RiUserLine size={20} /> },
-    { name: "Categories", href: "/admin/categories", icon: <RiFolderLine size={20} /> },
-    { name: "KYC Management", href: "/admin/kyc", icon: <RiShieldCheckLine size={20} /> },
-    { name: "Transactions", href: "/admin/transactions", icon: <RiExchangeDollarLine size={20} /> },
-    { name: "Tickets", href: "/admin/tickets", icon: <RiTicketLine size={20} /> },
-    { name: "Reports", href: "/admin/reports", icon: <RiBarChartLine size={20} /> },
-    { name: "Settings", href: "/admin/settings", icon: <RiSettings3Line size={20} /> },
+    {
+      name: "Dashboard",
+      href: "/admin",
+      icon: <RiHomeLine size={20} />,
+      requiredModule: "Dashboard",
+    },
+    {
+      name: "Users",
+      href: "/admin/users",
+      icon: <RiUserLine size={20} />,
+      requiredModule: "Users",
+    },
+    {
+      name: "Staffs",
+      href: "/admin/staffs",
+      icon: <RiUserLine size={20} />,
+      superAdminOnly: true, // ✅ Only Super Admin can see this
+    },
+    {
+      name: "Categories",
+      href: "/admin/categories",
+      icon: <RiFolderLine size={20} />,
+      requiredModule: "Products", // Assuming categories fall under Products
+    },
+    {
+      name: "KYC Management",
+      href: "/admin/kyc",
+      icon: <RiShieldCheckLine size={20} />,
+      requiredModule: "Users",
+    },
+    {
+      name: "Transactions",
+      href: "/admin/transactions",
+      icon: <RiExchangeDollarLine size={20} />,
+      requiredModule: "Payments",
+    },
+    {
+      name: "Tickets",
+      href: "/admin/tickets",
+      icon: <RiTicketLine size={20} />,
+      requiredModule: "Support",
+    },
+    {
+      name: "Reports",
+      href: "/admin/reports",
+      icon: <RiBarChartLine size={20} />,
+      requiredModule: "Dashboard",
+    },
+    {
+      name: "Settings",
+      href: "/admin/settings",
+      icon: <RiSettings3Line size={20} />,
+      requiredModule: "Settings",
+    },
   ];
+
+  // ✅ Filter menu items based on permissions
+  const filteredMenuItems = menuItems.filter((item) => {
+    // If it's super admin only, check role
+    if (item.superAdminOnly) {
+      return user?.role === "Super Admin";
+    }
+
+    // Otherwise check module permission
+    if (item.requiredModule) {
+      return hasPermission(item.requiredModule, "View");
+    }
+
+    return true;
+  });
 
   const SidebarContent = (
     <aside
@@ -80,12 +141,22 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
         </button>
       </div>
 
+      {/* ✅ User Info Section */}
+      {!collapsed && user && (
+        <div className="mb-4 p-3 bg-green-800/50 rounded-lg border border-green-600/30">
+          <p className="text-sm font-semibold truncate">{user.name}</p>
+          <p className="text-xs text-green-200 truncate">{user.email}</p>
+          <span className="inline-block mt-1 px-2 py-0.5 bg-green-600 text-xs rounded">
+            {user.role}
+          </span>
+        </div>
+      )}
+
       {/* Nav */}
-      <nav className="flex-1 space-y-2">
-        {menuItems.map((item) => {
+      <nav className="flex-1 space-y-2 overflow-y-auto">
+        {filteredMenuItems.map((item) => {
           const active =
-            pathname === item.href ||
-            pathname.startsWith(item.href + "/admin");
+            pathname === item.href || pathname.startsWith(item.href + "/");
 
           return (
             <Link
@@ -109,7 +180,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
           logout();
           router.replace("/");
         }}
-        className={`flex items-center gap-3 cursor-pointer rounded-lg bg-red-500 mt-4
+        className={`flex items-center gap-3 cursor-pointer rounded-lg bg-red-500 hover:bg-red-600 transition mt-4
         ${collapsed ? "justify-center p-3" : "px-4 py-3"}`}
       >
         <RiLogoutBoxRLine size={20} />

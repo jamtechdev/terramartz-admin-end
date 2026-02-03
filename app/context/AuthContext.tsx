@@ -3,63 +3,134 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
+type RoleType =
+  | "Super Admin"
+  | "Ops"
+  | "Finance"
+  | "Logistics"
+  | "Support"
+  | "Read-Only";
+
+type User = {
+  _id: string;
+  name: string;
+  email: string;
+  phoneNumber: number | string;
+  role: RoleType;
+  isActive: boolean;
+  permissions: {
+    Dashboard: string;
+    Orders: string;
+    Vendors: string;
+    Products: string;
+    Users: string;
+    Payments: string;
+    Payouts: string;
+    Logistics: string;
+    Support: string;
+    Marketing: string;
+    Settings: string;
+  };
+};
+
 type AuthContextType = {
-  isAdmin: boolean;
+  isAuthenticated: boolean;
   token: string | null;
-  login: (token: string) => void;
+  user: User | null;
+  login: (token: string, userData: User) => void;
   logout: () => void;
   loading: boolean;
+  hasPermission: (module: string, accessLevel?: "View" | "Full") => boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAdmin, setIsAdmin] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // =========================
   // LOAD AUTH FROM STORAGE
   // =========================
   useEffect(() => {
-    const storedAdmin = localStorage.getItem("admin") === "true";
     const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
-    setIsAdmin(storedAdmin);
-    setToken(storedToken);
+    if (storedToken) {
+      setToken(storedToken);
+      console.log("✅ Token set in state");
+    }
+
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      }
+    }
+
     setLoading(false);
+    console.log("🏁 AuthContext: Loading complete");
   }, []);
 
   // =========================
   // LOGIN
   // =========================
-  const login = (authToken: string) => {
-    localStorage.setItem("admin", "true");
+  const login = (authToken: string, userData: User) => {
     localStorage.setItem("token", authToken);
+    localStorage.setItem("user", JSON.stringify(userData));
 
-    setIsAdmin(true);
     setToken(authToken);
+    setUser(userData);
   };
 
   // =========================
   // LOGOUT
   // =========================
   const logout = () => {
-    localStorage.removeItem("admin");
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
-    setIsAdmin(false);
     setToken(null);
+    setUser(null);
   };
+
+  const hasPermission = (
+    module: string,
+    accessLevel: "View" | "Full" = "View",
+  ): boolean => {
+    if (!user || !user.permissions) {
+      return false;
+    }
+
+    const currentAccess =
+      user.permissions[module as keyof typeof user.permissions];
+    const result =
+      accessLevel === "View"
+        ? currentAccess === "View" || currentAccess === "Full"
+        : currentAccess === "Full";
+
+    return result;
+  };
+
+  console.log("🔄 AuthContext render:", {
+    token,
+    user,
+  });
 
   return (
     <AuthContext.Provider
       value={{
-        isAdmin,
+        isAuthenticated: !!token && !!user,
         token,
+        user,
         login,
         logout,
         loading,
+        hasPermission,
       }}
     >
       {children}
@@ -67,9 +138,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// =========================
-// HOOK
-// =========================
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
