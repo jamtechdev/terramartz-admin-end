@@ -17,6 +17,9 @@ import {
   RiTicketLine,
   RiShieldCheckLine,
   RiCloseLine,
+  RiShoppingBagLine,
+  RiArrowDownSLine,
+  RiArrowRightSLine,
 } from "react-icons/ri";
 import { FaUsersGear } from "react-icons/fa6";
 
@@ -30,6 +33,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const menuItems = [
     {
@@ -43,6 +47,22 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       href: "/admin/users",
       icon: <RiUserLine size={20} />,
       requiredModule: "Users",
+    },
+    {
+      name: "Products",
+      href: "/admin/products",
+      icon: <RiShoppingBagLine size={20} />,
+      requiredModule: "Products",
+      children: [
+        {
+          name: "All Products",
+          href: "/admin/products",
+        },
+        {
+          name: "Approval Requests",
+          href: "/admin/products/requests",
+        },
+      ],
     },
     {
       name: "Staffs",
@@ -157,20 +177,67 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       <nav className="flex-1 space-y-2 overflow-y-auto">
         {filteredMenuItems.map((item) => {
           const active =
-            pathname === item.href || pathname.startsWith(item.href + "/admin");
+            pathname === item.href || pathname.startsWith(item.href + "/");
+          const isExpanded = expandedItems.includes(item.name);
+          const hasChildren = item.children && item.children.length > 0;
 
           return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-lg transition
-              ${collapsed ? "justify-center p-3" : "px-4 py-3"}
-              ${active ? "bg-green-900 text-white" : "text-green-100 hover:bg-green-900"}`}
-            >
-              {item.icon}
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
+            <div key={item.name}>
+              {hasChildren ? (
+                <button
+                  onClick={() => {
+                    if (collapsed) return;
+                    setExpandedItems(prev => 
+                      prev.includes(item.name) 
+                        ? prev.filter(name => name !== item.name)
+                        : [...prev, item.name]
+                    );
+                  }}
+                  className={`w-full flex items-center gap-3 rounded-lg transition
+                  ${collapsed ? "justify-center p-3" : "px-4 py-3"}
+                  ${active ? "bg-green-900 text-white" : "text-green-100 hover:bg-green-900"}`}
+                >
+                  {item.icon}
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 text-left">{item.name}</span>
+                      {isExpanded ? <RiArrowDownSLine size={16} /> : <RiArrowRightSLine size={16} />}
+                    </>
+                  )}
+                </button>
+              ) : (
+                <Link
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg transition
+                  ${collapsed ? "justify-center p-3" : "px-4 py-3"}
+                  ${active ? "bg-green-900 text-white" : "text-green-100 hover:bg-green-900"}`}
+                >
+                  {item.icon}
+                  {!collapsed && <span>{item.name}</span>}
+                </Link>
+              )}
+              
+              {/* Submenu */}
+              {hasChildren && isExpanded && !collapsed && (
+                <div className="ml-6 mt-1 space-y-1">
+                  {item.children?.map((child) => {
+                    const childActive = pathname === child.href;
+                    return (
+                      <Link
+                        key={child.name}
+                        href={child.href}
+                        onClick={() => setMobileOpen(false)}
+                        className={`block px-4 py-2 rounded text-sm transition
+                        ${childActive ? "bg-green-800 text-white" : "text-green-200 hover:bg-green-800"}`}
+                      >
+                        {child.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>
