@@ -23,7 +23,7 @@ export default function AdminHeader({
         <div className="relative w-full max-w-xl">
           <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
-           type="text"
+            type="text"
             placeholder="Search folders, files, records..."
             className="w-full rounded-xl
                      bg-gray-100
@@ -39,7 +39,7 @@ export default function AdminHeader({
       </div>
 
       {/* User */}
-      <div className="flex items-center gap-3">
+      {/* <div className="flex items-center gap-3">
         <Image
           src="/images/user-avatar.png"
           alt="User Avatar"
@@ -51,7 +51,7 @@ export default function AdminHeader({
           <p className="text-sm text-black font-medium">John Doe</p>
           <p className="text-xs text-gray-400">johndoe@email.com</p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

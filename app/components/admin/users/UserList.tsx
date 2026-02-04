@@ -152,7 +152,7 @@ export default function UserList() {
   const handleToggleRole = async (id: string) => {
     if (!token) return;
     setLoading(true);
-    const user = users.find(u => u._id === id);
+    const user = users.find((u) => u._id === id);
     const newRole = user?.role === "Buyer" ? "seller" : "user";
     const res = await userService.updateUserRole(id, newRole, token);
     setLoading(false);
@@ -303,7 +303,7 @@ export default function UserList() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-3">
-                    <button
+                      <button
                         onClick={() => handleEdit(user)}
                         className="text-green-700 hover:text-green-800 text-xs font-semibold hover:underline transition-colors"
                       >
@@ -323,12 +323,12 @@ export default function UserList() {
                       >
                         {user.isActive ? "Disable" : "Enable"}
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => handleDelete(user._id)}
                         className="text-red-600 hover:text-red-700 text-xs font-semibold hover:underline transition-colors"
                       >
                         Delete
-                      </button>
+                      </button> */}
                     </div>
                   </td>
                 </tr>
