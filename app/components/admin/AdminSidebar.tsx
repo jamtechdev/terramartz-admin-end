@@ -157,7 +157,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       <nav className="flex-1 space-y-2 overflow-y-auto">
         {filteredMenuItems.map((item) => {
           const active =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+            pathname === item.href || pathname.startsWith(item.href + "/admin");
 
           return (
             <Link
