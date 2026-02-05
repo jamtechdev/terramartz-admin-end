@@ -84,6 +84,7 @@ export const productService = {
   approveProduct,
   rejectProduct,
   updateProductStatus,
+  exportProductsCSV,
 };
 
 async function getProducts(filters: ProductFilters = {}, token?: string): Promise<ProductsResponse> {
@@ -175,6 +176,21 @@ async function updateProductStatus(productId: string, status: string, token?: st
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
+    }
+  );
+
+  return response.data;
+}
+
+async function exportProductsCSV(token?: string) {
+  const response = await axios.get(
+    `${BASE_URL}/api/admin/products/export/csv`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      responseType: 'blob',
     }
   );
 

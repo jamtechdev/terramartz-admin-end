@@ -67,6 +67,24 @@ export default function ProductList() {
     return `${process.env.NEXT_PUBLIC_S3_DIRECT_URL}/products/${imageName}`;
   };
 
+  const handleExportCSV = async () => {
+    if (!token) return;
+    
+    try {
+      const blob = await productService.exportProductsCSV(token);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'products.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -171,12 +189,20 @@ export default function ProductList() {
           <p className="text-gray-600">
             Showing {pagination.results} of {pagination.total} products
           </p>
-          <button
-            onClick={() => setFilters({ page: 1, limit: 10 })}
-            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-          >
-            Clear Filters
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilters({ page: 1, limit: 10 })}
+              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            >
+              Clear Filters
+            </button>
+            <button
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+            >
+              Export CSV
+            </button>
+          </div>
         </div>
       </div>
 
