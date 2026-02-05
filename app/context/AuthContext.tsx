@@ -30,6 +30,7 @@ type User = {
     Support: string;
     Marketing: string;
     Settings: string;
+    Blogs: string;
   };
 };
 
