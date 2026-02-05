@@ -2,16 +2,16 @@
 
 import CategoryForm from "./CategoryForm";
 
-
 export default function CategoryModal({
   category,
+  loading,
   onClose,
   onSave,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   category: any;
+  loading?: boolean;
   onClose: () => void;
-  onSave: (name: string) => void;
+  onSave: (data: { name: string; description: string; image: File | null }) => void;
 }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -21,12 +21,18 @@ export default function CategoryModal({
         </h2>
 
         <CategoryForm
-          initialName={category?.name}
+          initialData={{
+            name: category?.name,
+            description: category?.description,
+            existingImage: category?.image,
+          }}
           onSubmit={onSave}
+          loading={loading}
         />
         <button
           onClick={onClose}
-          className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition w-full mt-3"
+          disabled={loading}
+          className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition w-full mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>

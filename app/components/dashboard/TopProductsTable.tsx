@@ -11,12 +11,37 @@ export type Product = {
   status: "Active" | "Inactive";
 };
 
+export type TopProduct = {
+  totalSold: number;
+  productId: string;
+  productName: string;
+  sku: string | null;
+  category: string;
+  stock: number;
+  price: number;
+  status: string;
+  image: string[];
+  totalRevenue: number;
+};
+
 type TopProductsTableProps = {
-  products: readonly Product[];
+  products?: readonly Product[];
+  topProducts?: readonly TopProduct[];
 };
 
 
-export default function TopProductsTable({ products }: TopProductsTableProps) {
+export default function TopProductsTable({ products, topProducts }: TopProductsTableProps) {
+  const displayProducts = topProducts?.map((item, index) => ({
+    id: index,
+    name: item.productName,
+    sku: item.sku || item.productId.substring(0, 8),
+    category: item.category,
+    sold: item.totalSold,
+    stock: item.stock,
+    price: item.price,
+    status: item.status.charAt(0).toUpperCase() + item.status.slice(1) as "Active" | "Inactive",
+  })) || products;
+
   return (
     <div>
         <h2 className="text-2xl font-bold mb-6 text-green-700">
@@ -48,7 +73,7 @@ export default function TopProductsTable({ products }: TopProductsTableProps) {
           </thead>
 
           <tbody className="divide-y divide-gray-100">
-            {products.map((product, index) => (
+            {displayProducts?.map((product, index) => (
               <tr
                 key={product.id}
                 className={`transition ${
@@ -89,7 +114,7 @@ export default function TopProductsTable({ products }: TopProductsTableProps) {
 
                 {/* Price */}
                 <td className="px-6 py-4 font-medium text-gray-900">
-                  ₹{product.price}
+                  ${product.price}
                 </td>
 
                 {/* Status */}

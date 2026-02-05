@@ -8,21 +8,34 @@ export const categoriesService = {
   addCategory,
   updateCategory,
   deleteCategory,
+  toggleCategoryStatus,
 };
 
 // ======================
 // GET ALL CATEGORIES
 // ======================
-async function getCategories(token: string) {
+async function getCategories(
+  token: string,
+  page?: number,
+  limit?: number,
+  search?: string,
+  statusFilter?: string,
+) {
   try {
+    const params = new URLSearchParams();
+    if (page) params.append("page", page.toString());
+    if (limit) params.append("limit", limit.toString());
+    if (search) params.append("search", search);
+    if (statusFilter) params.append("status", statusFilter);
+
     const response = await axios.get(
-      `${BASE_URL}/api/admin/categories`,
+      `${BASE_URL}/api/admin/categories?${params.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
-      }
+      },
     );
 
     return {
@@ -38,20 +51,24 @@ async function getCategories(token: string) {
 // ADD CATEGORY
 // ======================
 async function addCategory(
-  data: { name: string },
-  token: string
+  data: { name: string; description: string; image: File | null },
+  token: string,
 ) {
   try {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    if (data.description) formData.append("description", data.description);
+    if (data.image) formData.append("image", data.image);
+
     const response = await axios.post(
       `${BASE_URL}/api/admin/categories`,
-      data,
+      formData,
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
         withCredentials: true,
-      }
+      },
     );
 
     return {
@@ -68,20 +85,24 @@ async function addCategory(
 // ======================
 async function updateCategory(
   id: string,
-  data: { name: string },
-  token: string
+  data: { name: string; description: string; image: File | null },
+  token: string,
 ) {
   try {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    if (data.description) formData.append("description", data.description);
+    if (data.image) formData.append("image", data.image);
+
     const response = await axios.patch(
       `${BASE_URL}/api/admin/categories/${id}`,
-      data,
+      formData,
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
         withCredentials: true,
-      }
+      },
     );
 
     return {
@@ -96,10 +117,7 @@ async function updateCategory(
 // ======================
 // DELETE CATEGORY
 // ======================
-async function deleteCategory(
-  id: string,
-  token: string
-) {
+async function deleteCategory(id: string, token: string) {
   try {
     const response = await axios.delete(
       `${BASE_URL}/api/admin/categories/${id}`,
@@ -108,7 +126,33 @@ async function deleteCategory(
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
-      }
+      },
+    );
+
+    return {
+      success: true as const,
+      data: response.data,
+    };
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+// ======================
+// TOGGLE CATEGORY STATUS
+// ======================
+async function toggleCategoryStatus(id: string, token: string) {
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/api/admin/categories/${id}/toggle-is-active`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      },
     );
 
     return {

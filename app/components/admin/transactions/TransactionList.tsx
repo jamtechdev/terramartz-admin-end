@@ -7,6 +7,14 @@ import { transactionService } from "@/app/services/transaction.service";
 import { format } from "date-fns";
 import { useAuth } from "@/app/context/AuthContext";
 
+type Product = {
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  isDeleted: boolean;
+};
+
 type Transaction = {
   _id: string;
   buyerName: string;
@@ -15,6 +23,8 @@ type Transaction = {
   status: string;
   paymentStatus: string;
   date: string;
+  products: Product[];
+  totalProducts: number;
 };
 
 export default function TransactionList() {
@@ -29,12 +39,13 @@ export default function TransactionList() {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 5;
   const { token } = useAuth();
+
   // Fetch transactions
   const fetchTransactions = async (
     pageNum = page,
     searchTerm = search,
     statusTerm = statusFilter,
-    paymentTerm = paymentStatusFilter
+    paymentTerm = paymentStatusFilter,
   ) => {
     if (!token) return;
 
@@ -47,11 +58,10 @@ export default function TransactionList() {
       searchTerm.trim(),
       statusTerm,
       paymentTerm,
-      token
+      token,
     );
 
     if (!res.success) {
-      // ✅ error message strictly from API response
       setError(res.message || "");
       setLoading(false);
       return;
@@ -68,7 +78,9 @@ export default function TransactionList() {
         status: txn.status || "N/A",
         paymentStatus: txn.paymentStatus || "N/A",
         date: txn.date || "",
-      })
+        products: txn.products || [],
+        totalProducts: txn.totalProducts || 0,
+      }),
     );
 
     setTransactions(mappedTransactions);
@@ -101,6 +113,45 @@ export default function TransactionList() {
     return format(new Date(dateStr), "do MMM''yy");
   };
 
+  // 🔹 Helper function to get status badge styling
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "delivered":
+        return "bg-green-100 text-green-700";
+      case "shipped":
+      case "in_transit":
+        return "bg-blue-100 text-blue-700";
+      case "processing":
+      case "new":
+        return "bg-yellow-100 text-yellow-700";
+      case "cancelled":
+        return "bg-red-100 text-red-700";
+      case "refunded":
+        return "bg-purple-100 text-purple-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  // 🔹 Helper function to get payment status badge styling
+  const getPaymentStatusBadgeClass = (paymentStatus: string) => {
+    switch (paymentStatus) {
+      case "paid":
+        return "bg-green-100 text-green-700";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "failed":
+        return "bg-red-100 text-red-700";
+      case "refunded":
+      case "partially_refunded":
+        return "bg-purple-100 text-purple-700";
+      case "disputed":
+        return "bg-orange-100 text-orange-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Search & Filters */}
@@ -122,10 +173,13 @@ export default function TransactionList() {
           className="px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         >
           <option value="">All Status</option>
-          <option value="processing">Processing</option>
-          <option value="completed">Completed</option>
-          <option value="failed">Failed</option>
           <option value="new">New</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="in_transit">In Transit</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="refunded">Refunded</option>
         </select>
 
         <select
@@ -134,8 +188,12 @@ export default function TransactionList() {
           className="px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
         >
           <option value="">All Payment Status</option>
+          <option value="pending">Pending</option>
           <option value="paid">Paid</option>
-          <option value="unpaid">Unpaid</option>
+          <option value="failed">Failed</option>
+          <option value="refunded">Refunded</option>
+          <option value="partially_refunded">Partially Refunded</option>
+          <option value="disputed">Disputed</option>
         </select>
 
         <button
@@ -161,11 +219,17 @@ export default function TransactionList() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-green-700">
-              <th className="px-6 py-4 text-left font-semibold text-white flex items-center gap-1">
+              <th className="px-6 py-4 text-left font-semibold text-white">
                 Buyer Name
               </th>
               <th className="px-6 py-4 text-left font-semibold text-white">
                 Email
+              </th>
+              <th className="px-6 py-4 text-left font-semibold text-white">
+                Products
+              </th>
+              <th className="px-6 py-4 text-left font-semibold text-white">
+                Total Items
               </th>
               <th className="px-6 py-4 text-left font-semibold text-white">
                 Amount
@@ -184,19 +248,19 @@ export default function TransactionList() {
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={6} className="text-center text-black py-6">
+                <td colSpan={8} className="text-center text-black py-6">
                   Loading...
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={6} className="text-center text-black py-6">
+                <td colSpan={8} className="text-center text-black py-6">
                   {error}
                 </td>
               </tr>
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center text-black py-6">
+                <td colSpan={8} className="text-center text-black py-6">
                   No transactions found.
                 </td>
               </tr>
@@ -211,30 +275,57 @@ export default function TransactionList() {
                   <td className="px-6 py-4 text-gray-700">{txn.buyerName}</td>
                   <td className="px-6 py-4 text-gray-700">{txn.buyerEmail}</td>
                   <td className="px-6 py-4 text-gray-700">
+                    <div className="space-y-1">
+                      {txn.products.map((product, idx) => (
+                        <div
+                          key={idx}
+                          className={`text-xs flex items-center gap-2 ${
+                            product.isDeleted ? "opacity-60" : ""
+                          }`}
+                        >
+                          <span
+                            className={`font-medium ${
+                              product.isDeleted
+                                ? "line-through text-red-600"
+                                : ""
+                            }`}
+                          >
+                            {product.productName}
+                          </span>
+                          <span className="text-gray-500">
+                            (x{product.quantity})
+                          </span>
+                          {product.isDeleted && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-100 text-red-700">
+                              Deleted
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-700 text-center">
+                    {txn.totalProducts}
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">
                     ${txn.amount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        txn.status === "completed"
-                          ? "bg-green-100 text-green-700"
-                          : txn.status === "processing"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusBadgeClass(
+                        txn.status,
+                      )}`}
                     >
-                      {txn.status}
+                      {txn.status.replace("_", " ")}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        txn.paymentStatus === "paid"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getPaymentStatusBadgeClass(
+                        txn.paymentStatus,
+                      )}`}
                     >
-                      {txn.paymentStatus}
+                      {txn.paymentStatus.replace("_", " ")}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-700">

@@ -9,22 +9,31 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const salesData = [
-  { month: "Jan", revenue: 42000, orders: 320, profit: 12000 },
-  { month: "Feb", revenue: 38000, orders: 290, profit: 10500 },
-  { month: "Mar", revenue: 46000, orders: 350, profit: 14000 },
-  { month: "Apr", revenue: 52000, orders: 410, profit: 18000 },
-  { month: "May", revenue: 61000, orders: 480, profit: 22000 },
-  { month: "Jun", revenue: 68000, orders: 530, profit: 26000 },
+type MonthlyRevenue = {
+  revenue: number;
+  month: string;
+};
+
+interface SalesAnalyticsProps {
+  data: MonthlyRevenue[];
+}
+
+const defaultData = [
+  { month: "Jan", revenue: 42000 },
+  { month: "Feb", revenue: 38000 },
+  { month: "Mar", revenue: 46000 },
+  { month: "Apr", revenue: 52000 },
+  { month: "May", revenue: 61000 },
+  { month: "Jun", revenue: 68000 },
 ];
 
-export default function SalesAnalytics() {
+export default function SalesAnalytics({ data = defaultData }: SalesAnalyticsProps) {
   return (
     <>
        <div className="h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={salesData}
+            data={data}
             barSize={50}
           >
             <defs>
@@ -51,7 +60,7 @@ export default function SalesAnalytics() {
               stroke="#9ca3af"
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `₹${v / 1000}k`}
+              tickFormatter={(v) => `$${v / 1000}k`}
             />
 
             <Bar

@@ -13,7 +13,8 @@ export const authService = {
 
 async function adminLogin(payload: AdminLoginPayload) {
   const response = await axios.post(
-    `${BASE_URL}/api/admin/login`,
+    `${BASE_URL}/api/admin/auth/login`,
+    // `${BASE_URL}/api/admin/login`,
     payload,
     {
       headers: {
