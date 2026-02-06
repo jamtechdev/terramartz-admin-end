@@ -35,12 +35,16 @@ async function getBlogs(filters: BlogFilters = {}, token?: string): Promise<Blog
 
   // Handle the actual API response structure
   const apiData = response.data;
+  const page = typeof filters.page === 'number' ? filters.page : Number(apiData.page ?? 1);
+  const limit = typeof filters.limit === 'number' ? filters.limit : Number(apiData.limit ?? 10);
+  const results = Number(apiData.results ?? (apiData.data?.blogs?.length ?? 0));
+  const total = Number(apiData.total ?? apiData.data?.total ?? results);
   return {
     status: apiData.status,
-    page: 1,
-    limit: 10,
-    total: apiData.results || 0,
-    results: apiData.results || 0,
+    page,
+    limit,
+    total,
+    results,
     blogs: apiData.data?.blogs || []
   };
 }

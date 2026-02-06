@@ -9,7 +9,7 @@ import {
   KYCResponse
 } from '@/app/types/kyc';
 
-const API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Get KYC applications list
 export async function getAdminKYCApplications(

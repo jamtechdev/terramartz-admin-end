@@ -24,13 +24,18 @@ export default function BlogsPage() {
   const { token, hasPermission, user } = useAuth();
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    results: 0,
+  });
   const [filters, setFilters] = useState<BlogFilters>({
     page: 1,
     limit: 10,
     search: "",
     status: "",
   });
-  const [totalPages, setTotalPages] = useState(0);
 
   const isSuperAdmin = user?.role === "Super Admin";
   const sanitizeImageUrl = (url?: string) => {
@@ -50,13 +55,33 @@ export default function BlogsPage() {
       setLoading(true);
       const response = await blogService.getBlogs(filters, token || undefined);
       setBlogs(response.blogs || []);
-      setTotalPages(Math.ceil((response.total || 0) / (filters.limit || 10)));
+      setPagination({
+        page: response.page,
+        limit: response.limit,
+        total: response.total,
+        results: response.results,
+      });
     } catch (error) {
       console.error("Error fetching blogs:", error);
       setBlogs([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFilterChange = (key: keyof BlogFilters, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value,
+      page: key !== 'page' ? 1 : value
+    }));
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1) return;
+    const lastPage = Math.max(1, Math.ceil((pagination.total || 0) / (pagination.limit || 10)));
+    if (newPage > lastPage) return;
+    setFilters(prev => ({ ...prev, page: newPage }));
   };
 
   const handleStatusChange = async (blogId: string, status: 'published' | 'draft') => {
@@ -194,19 +219,45 @@ export default function BlogsPage() {
         </div>
       )}
 
+      {/* Results Info */}
+      <div className="flex justify-between items-center mt-4">
+        <p className="text-gray-600">
+          Showing {pagination.results} of {pagination.total} blogs
+        </p>
+        <div className="flex items-center gap-2">
+          <select
+            value={filters.limit || 10}
+            onChange={(e) => handleFilterChange('limit', Number(e.target.value))}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+          >
+            <option value={10}>10 per page</option>
+            <option value={25}>25 per page</option>
+            <option value={50}>50 per page</option>
+            <option value={100}>100 per page</option>
+          </select>
+        </div>
+      </div>
+
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <Button
-              key={page}
-              variant={filters.page === page ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilters({ ...filters, page })}
-            >
-              {page}
-            </Button>
-          ))}
+      {pagination.total > pagination.limit && (
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <button
+            onClick={() => handlePageChange(pagination.page - 1)}
+            disabled={pagination.page === 1}
+            className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+          >
+            Previous
+          </button>
+          <span className="px-4 py-2 text-gray-700">
+            Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
+          </span>
+          <button
+            onClick={() => handlePageChange(pagination.page + 1)}
+            disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
+            className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
