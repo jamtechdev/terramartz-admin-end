@@ -8,9 +8,7 @@ import { blogCategoryService } from "../../../services/blog-category.service";
 import { mediaService } from "../../../services/media.service";
 import { BlogCategory, CreateBlogPayload, BlogPost } from "../../../types/blog";
 import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
-import { Select } from "../../../components/ui/select";
 import { Card } from "../../../components/ui/card";
 import { RiSaveLine, RiArrowLeftLine, RiImageLine } from "react-icons/ri";
 import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
@@ -189,13 +187,13 @@ export default function EditBlogPage() {
 
   if (!isSuperAdmin) {
     const imgSrc = sanitizeImageUrl(blog.featuredImage);
-    return (
+return (
       <div className="space-y-6">
         <div className="flex items-center justify-between mb-6">
         <DashboardHeader title="Blog Details" />
         <button
           onClick={() => router.back()}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+          className="bg-green-700 hover:bg-green-800 text-white px-5 py-2.5 rounded-lg transition-colors font-medium text-sm"
         >
           ← Back to Blog
         </button>
@@ -227,13 +225,13 @@ export default function EditBlogPage() {
     );
   }
 
-  return (
+return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
         <DashboardHeader title="Edit Blog Post" />
         <button
           onClick={() => router.back()}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+          className="bg-green-700 hover:bg-green-800 text-white px-5 py-2.5 rounded-lg transition-colors font-medium text-sm"
         >
           ← Back to Blog
         </button>
@@ -242,14 +240,15 @@ export default function EditBlogPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="p-6">
           <div className="space-y-4">
-            <div>
+<div>
               <Label htmlFor="title">Title *</Label>
-              <Input
+              <input
+                type="text"
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Enter blog title"
-                className={errors.title ? "border-red-500" : ""}
+                className={`w-full px-4 py-2.5 bg-white border text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors ${errors.title ? "border-red-500" : "border-gray-300"}`}
               />
               {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
@@ -261,7 +260,7 @@ export default function EditBlogPage() {
                 value={formData.shortDescription}
                 onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
                 rows={3}
-                className={`w-full px-3 py-2 border rounded-md ${errors.shortDescription ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full px-4 py-2.5 bg-white border text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors ${errors.shortDescription ? "border-red-500" : "border-gray-300"}`}
               />
               {errors.shortDescription && <p className="text-red-500 text-sm mt-1">{errors.shortDescription}</p>}
             </div>
@@ -273,17 +272,19 @@ export default function EditBlogPage() {
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 rows={10}
-                className={`w-full px-3 py-2 border rounded-md ${errors.content ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full px-4 py-2.5 bg-white border text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors ${errors.content ? "border-red-500" : "border-gray-300"}`}
               />
               {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category">Category *</Label>
-                <Select
+                <select
+                  id="category"
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: (e.target as HTMLSelectElement).value })}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors"
                 >
                   <option value="">Select Category</option>
                   {categories && categories.map((category) => (
@@ -291,19 +292,21 @@ export default function EditBlogPage() {
                       {category.name}
                     </option>
                   ))}
-                </Select>
+                </select>
                 {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
               </div>
 
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select
+                <select
+                  id="status"
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: (e.target as HTMLSelectElement).value as 'draft' | 'published' })}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'draft' | 'published' })}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors"
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
-                </Select>
+                </select>
               </div>
             </div>
 
@@ -335,13 +338,15 @@ export default function EditBlogPage() {
               {errors.featuredImage && <p className="text-red-500 text-sm mt-1">{errors.featuredImage}</p>}
             </div>
 
-            <div>
+<div>
               <Label htmlFor="tags">Tags (comma separated)</Label>
-              <Input
+              <input
+                type="text"
                 id="tags"
                 value={formData.tags.join(', ')}
                 onChange={(e) => handleTagsChange(e.target.value)}
                 placeholder="tag1, tag2, tag3"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors"
               />
             </div>
           </div>
@@ -350,26 +355,27 @@ export default function EditBlogPage() {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">SEO Settings</h3>
           <div className="space-y-4">
-            <div>
+<div>
               <Label htmlFor="seoTitle">SEO Title</Label>
-              <Input
+              <input
+                type="text"
                 id="seoTitle"
                 value={formData.seoTitle}
                 onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
                 placeholder="SEO optimized title"
-                className={errors.seoTitle ? "border-red-500" : ""}
+                className={`w-full px-4 py-2.5 bg-white border text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors ${errors.seoTitle ? "border-red-500" : "border-gray-300"}`}
               />
               {errors.seoTitle && <p className="text-red-500 text-sm mt-1">{errors.seoTitle}</p>}
             </div>
 
-            <div>
+<div>
               <Label htmlFor="seoDescription">SEO Description</Label>
               <textarea
                 id="seoDescription"
                 value={formData.seoDescription}
                 onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
                 rows={3}
-                className={`w-full px-3 py-2 border rounded-md ${errors.seoDescription ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full px-4 py-2.5 bg-white border text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors ${errors.seoDescription ? "border-red-500" : "border-gray-300"}`}
               />
               {errors.seoDescription && <p className="text-red-500 text-sm mt-1">{errors.seoDescription}</p>}
             </div>
