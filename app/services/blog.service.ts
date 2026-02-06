@@ -118,7 +118,6 @@ async function unpublishBlog(blogId: string, token?: string) {
 
 // Update the updateFullBlog function to be exported
 async function updateFullBlog(blogId: string, data: CreateBlogPayload, token?: string) {
-  try {
     const response = await axios.patch(`${BASE_URL}/api/admin/blogs/${blogId}/edit`, data, {
       headers: {
         'Content-Type': 'application/json',
@@ -126,8 +125,4 @@ async function updateFullBlog(blogId: string, data: CreateBlogPayload, token?: s
       },
     });
     return response.data;
-  } catch (error) {
-    console.error('Error updating blog:', error);
-    throw error;
-  }
 }

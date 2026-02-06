@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/modules/core/components/ui/button';
-import { Textarea } from '@/modules/core/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/modules/core/components/ui/card';
-import { Badge } from '@/modules/core/components/ui/badge';
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 import { 
   CheckCircle, 
   XCircle, 
@@ -14,7 +13,7 @@ import {
   Send,
   AlertCircle
 } from 'lucide-react';
-import { KYCApplication, KYCStatus } from '@/modules/core/types/kyc';
+import { KYCApplication, KYCStatus } from '../../types/kyc';
 
 interface ActionPanelProps {
   application: KYCApplication;

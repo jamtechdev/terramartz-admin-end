@@ -283,7 +283,7 @@ export default function EditBlogPage() {
                 <Label htmlFor="category">Category *</Label>
                 <Select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, category: (e.target as HTMLSelectElement).value })}
                 >
                   <option value="">Select Category</option>
                   {categories && categories.map((category) => (
@@ -299,7 +299,7 @@ export default function EditBlogPage() {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'draft' | 'published' })}
+                  onChange={(e) => setFormData({ ...formData, status: (e.target as HTMLSelectElement).value as 'draft' | 'published' })}
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>

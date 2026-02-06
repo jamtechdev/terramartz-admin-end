@@ -1,25 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Input } from '@/modules/core/components/ui/input';
-import { Button } from '@/modules/core/components/ui/button';
-import { Label } from '@/modules/core/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/modules/core/components/ui/select';
-import { 
-  Calendar, 
-  Search, 
-  Filter, 
-  X,
-  Download
-} from 'lucide-react';
-import { KYCFilterOptions } from '@/modules/core/types/kyc';
-import { format, subDays } from 'date-fns';
+import { useState } from "react";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { Label } from "../../components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../components/ui/select";
+import { Calendar, Search, Filter, X, Download } from "lucide-react";
+import { KYCFilterOptions, KYCReviewPayload } from "@/app/types/kyc";
+import { format, subDays } from "date-fns";
 
 interface ApplicationFiltersProps {
   filters: KYCFilterOptions;
@@ -32,29 +20,32 @@ export default function ApplicationFilters({
   filters,
   onFilterChange,
   totalApplications,
-  onExport
+  onExport,
 }: ApplicationFiltersProps) {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [localFilters, setLocalFilters] = useState(filters);
 
   const handleSearchChange = (value: string) => {
-    setLocalFilters(prev => ({ ...prev, search: value || undefined }));
+    setLocalFilters((prev) => ({ ...prev, search: value || undefined }));
   };
 
   const handleStatusChange = (value: string) => {
-    setLocalFilters(prev => ({ ...prev, status: value as any || undefined }));
+    setLocalFilters((prev) => ({
+      ...prev,
+      status: (value as any) || undefined,
+    }));
   };
 
-  const handleDateChange = (field: 'dateFrom' | 'dateTo', value: string) => {
-    setLocalFilters(prev => ({ ...prev, [field]: value || undefined }));
+  const handleDateChange = (field: "dateFrom" | "dateTo", value: string) => {
+    setLocalFilters((prev) => ({ ...prev, [field]: value || undefined }));
   };
 
   const handleSortChange = (value: string) => {
-    const [sortBy, sortOrder] = value.split('-');
-    setLocalFilters(prev => ({ 
-      ...prev, 
+    const [sortBy, sortOrder] = value.split("-");
+    setLocalFilters((prev) => ({
+      ...prev,
       sortBy: sortBy as any,
-      sortOrder: sortOrder as any
+      sortOrder: sortOrder as any,
     }));
   };
 
@@ -66,35 +57,37 @@ export default function ApplicationFilters({
     const clearedFilters = {
       page: 1,
       limit: 10,
-      sortBy: 'submittedAt' as const,
-      sortOrder: 'desc' as const
+      sortBy: "submittedAt" as const,
+      sortOrder: "desc" as const,
     };
     setLocalFilters(clearedFilters);
     onFilterChange(clearedFilters);
   };
 
   const hasActiveFilters = () => {
-    return filters.status || filters.search || filters.dateFrom || filters.dateTo;
+    return (
+      filters.status || filters.search || filters.dateFrom || filters.dateTo
+    );
   };
 
   const getSortOptions = () => {
     return [
-      { value: 'submittedAt-desc', label: 'Newest First' },
-      { value: 'submittedAt-asc', label: 'Oldest First' },
-      { value: 'reviewedAt-desc', label: 'Recently Reviewed' },
-      { value: 'reviewedAt-asc', label: 'Least Recently Reviewed' },
-      { value: 'createdAt-desc', label: 'Newest Applications' },
-      { value: 'createdAt-asc', label: 'Oldest Applications' }
+      { value: "submittedAt-desc", label: "Newest First" },
+      { value: "submittedAt-asc", label: "Oldest First" },
+      { value: "reviewedAt-desc", label: "Recently Reviewed" },
+      { value: "reviewedAt-asc", label: "Least Recently Reviewed" },
+      { value: "createdAt-desc", label: "Newest Applications" },
+      { value: "createdAt-asc", label: "Oldest Applications" },
     ];
   };
 
   const getStatusOptions = () => {
     return [
-      { value: 'pending', label: 'Pending' },
-      { value: 'submitted', label: 'Submitted' },
-      { value: 'under_review', label: 'Under Review' },
-      { value: 'approved', label: 'Approved' },
-      { value: 'rejected', label: 'Rejected' }
+      { value: "pending", label: "Pending" },
+      { value: "submitted", label: "Submitted" },
+      { value: "under_review", label: "Under Review" },
+      { value: "approved", label: "Approved" },
+      { value: "rejected", label: "Rejected" },
     ];
   };
 
@@ -108,11 +101,11 @@ export default function ApplicationFilters({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Search by seller name or email..."
-              value={localFilters.search || ''}
+              value={localFilters.search || ""}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   applyFilters();
                 }
               }}
@@ -123,7 +116,7 @@ export default function ApplicationFilters({
         {/* Status Filter */}
         <div className="w-full md:w-48">
           <Select
-            value={localFilters.status || 'all'}
+            value={localFilters.status || "all"}
             onValueChange={handleStatusChange}
           >
             <SelectTrigger>
@@ -131,7 +124,7 @@ export default function ApplicationFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              {getStatusOptions().map(option => (
+              {getStatusOptions().map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -150,7 +143,7 @@ export default function ApplicationFilters({
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
-              {getSortOptions().map(option => (
+              {getSortOptions().map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -168,7 +161,7 @@ export default function ApplicationFilters({
             <Filter className="w-4 h-4 mr-2" />
             Apply
           </Button>
-          
+
           {hasActiveFilters() && (
             <Button
               variant="outline"
@@ -179,7 +172,7 @@ export default function ApplicationFilters({
               Clear
             </Button>
           )}
-          
+
           {onExport && (
             <Button
               variant="outline"
@@ -202,9 +195,9 @@ export default function ApplicationFilters({
           className="text-gray-600 hover:text-gray-900"
         >
           <Filter className="w-4 h-4 mr-2" />
-          {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+          {showAdvancedFilters ? "Hide" : "Show"} Advanced Filters
         </Button>
-        
+
         <div className="text-sm text-gray-500">
           {totalApplications} applications found
           {hasActiveFilters() && (
@@ -226,10 +219,10 @@ export default function ApplicationFilters({
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="date"
-                  value={localFilters.dateFrom || ''}
-                  onChange={(e) => handleDateChange('dateFrom', e.target.value)}
+                  value={localFilters.dateFrom || ""}
+                  onChange={(e) => handleDateChange("dateFrom", e.target.value)}
                   className="pl-10"
-                  max={localFilters.dateTo || format(new Date(), 'yyyy-MM-dd')}
+                  max={localFilters.dateTo || format(new Date(), "yyyy-MM-dd")}
                 />
               </div>
             </div>
@@ -242,11 +235,11 @@ export default function ApplicationFilters({
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="date"
-                  value={localFilters.dateTo || ''}
-                  onChange={(e) => handleDateChange('dateTo', e.target.value)}
+                  value={localFilters.dateTo || ""}
+                  onChange={(e) => handleDateChange("dateTo", e.target.value)}
                   className="pl-10"
                   min={localFilters.dateFrom}
-                  max={format(new Date(), 'yyyy-MM-dd')}
+                  max={format(new Date(), "yyyy-MM-dd")}
                 />
               </div>
             </div>
@@ -258,21 +251,24 @@ export default function ApplicationFilters({
               </Label>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { label: 'Last 7 days', days: 7 },
-                  { label: 'Last 30 days', days: 30 },
-                  { label: 'Last 90 days', days: 90 },
-                  { label: 'Last 6 months', days: 180 }
+                  { label: "Last 7 days", days: 7 },
+                  { label: "Last 30 days", days: 30 },
+                  { label: "Last 90 days", days: 90 },
+                  { label: "Last 6 months", days: 180 },
                 ].map((preset) => (
                   <Button
                     key={preset.days}
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      const fromDate = format(subDays(new Date(), preset.days), 'yyyy-MM-dd');
-                      setLocalFilters(prev => ({
+                      const fromDate = format(
+                        subDays(new Date(), preset.days),
+                        "yyyy-MM-dd",
+                      );
+                      setLocalFilters((prev) => ({
                         ...prev,
                         dateFrom: fromDate,
-                        dateTo: format(new Date(), 'yyyy-MM-dd')
+                        dateTo: format(new Date(), "yyyy-MM-dd"),
                       }));
                     }}
                     className="border-gray-300 text-gray-700 hover:bg-gray-100"

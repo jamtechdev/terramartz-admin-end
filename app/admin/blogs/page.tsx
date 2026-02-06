@@ -6,8 +6,6 @@ import { blogService } from "../../services/blog.service";
 import { BlogPost, BlogFilters } from "../../types/blog";
 import Link from "next/link";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Select } from "../../components/ui/select";
 import { Badge } from "../../components/ui/badge";
 import { Card } from "../../components/ui/card";
 import { 
@@ -100,26 +98,27 @@ export default function BlogsPage() {
         )}
       </div>
 
-      {/* Filters */}
       <Card className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
             <RiSearchLine className="absolute left-3 top-3 text-gray-400" size={16} />
-            <Input
+            <input
+              type="text"
               placeholder="Search blogs..."
               value={filters.search}
               onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-              className="pl-10"
+              className="pl-10 px-4 py-2.5 bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 min-w-[240px] text-sm transition-colors"
             />
           </div>
-          <Select
+          <select
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
+            className="px-4 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors"
           >
             <option value="">All Status</option>
             <option value="published">Published</option>
             <option value="draft">Draft</option>
-          </Select>
+          </select>
         </div>
       </Card>
 

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/modules/core/components/ui/card';
-import { Button } from '@/modules/core/components/ui/button';
-import { Badge } from '@/modules/core/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 import { 
   Eye, 
   Download, 
@@ -16,7 +16,7 @@ import {
   ZoomIn,
   RotateCcw
 } from 'lucide-react';
-import { KYCApplication, KYCDocument, DocumentStatus } from '@/modules/core/types/kyc';
+import { KYCApplication, KYCDocument, DocumentStatus } from '@/app/types/kyc';
 import { motion } from 'motion/react';
 
 interface DocumentGalleryProps {
@@ -119,7 +119,7 @@ export default function DocumentGallery({
     setZoomLevel(1);
   };
 
-  const groupedDocuments = application.verificationSteps.map(step => ({
+  const groupedDocuments = application.verificationSteps.map((step: any) => ({
     step,
     documents: step.documents
   }));
@@ -152,7 +152,7 @@ export default function DocumentGallery({
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {group.documents.map((doc, docIndex) => {
+                  {group.documents.map((doc: any, docIndex: number) => {
                     const statusConfig = getStatusConfig(doc.status);
                     const StatusIcon = statusConfig.icon;
                     

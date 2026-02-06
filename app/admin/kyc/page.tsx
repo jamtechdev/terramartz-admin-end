@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/app/store';
-import { 
-  getAdminKYCStats, 
+import {
+  getAdminKYCStats,
   getAdminKYCApplications,
   getAdminKYCApplication,
   reviewKYCApplication
 } from '@/app/actions/kyc.action';
+import { KYCReviewPayload } from '@/app/types/kyc';
 import { 
   setStats,
   setApplications,
@@ -158,7 +159,7 @@ export default function AdminKYCPage() {
     
     setIsProcessing(true);
     try {
-      const payload = {
+      const payload: KYCReviewPayload = {
         status: 'approved',
         verificationSteps: {
           identityVerified: true,
@@ -192,7 +193,7 @@ export default function AdminKYCPage() {
     
     setIsProcessing(true);
     try {
-      const payload = {
+      const payload: KYCReviewPayload = {
         status: 'rejected',
         rejectionReason: reason
       };

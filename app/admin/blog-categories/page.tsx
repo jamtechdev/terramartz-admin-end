@@ -6,7 +6,6 @@ import { blogCategoryService } from "../../services/blog-category.service";
 import { BlogCategory, BlogFilters } from "../../types/blog";
 import Link from "next/link";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import { Card } from "../../components/ui/card";
 import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
@@ -85,16 +84,18 @@ export default function BlogCategoriesPage() {
         )}
       </div>
 
-      {/* Search */}
-      <Card className="p-4">
-        <div className="relative max-w-md">
-          <RiSearchLine className="absolute left-3 top-3 text-gray-400" size={16} />
-          <Input
-            placeholder="Search categories..."
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
-            className="pl-10"
-          />
+<Card className="p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <RiSearchLine className="absolute left-3 top-3 text-gray-400" size={16} />
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={filters.search}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
+              className="pl-10 px-4 py-2.5 bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 min-w-[240px] text-sm transition-colors"
+            />
+          </div>
         </div>
       </Card>
 

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/modules/core/components/ui/card';
-import { Button } from '@/modules/core/components/ui/button';
-import { Badge } from '@/modules/core/components/ui/badge';
-import { Textarea } from '@/modules/core/components/ui/textarea';
-import { Label } from '@/modules/core/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
+// import { Textarea } from '../../components/ui/textarea';
+import { Label } from '../../components/ui/label';
 import { 
   ArrowLeft, 
   User, 
@@ -19,7 +19,7 @@ import {
   Download,
   AlertCircle
 } from 'lucide-react';
-import { KYCApplication, KYCReviewPayload } from '@/modules/core/types/kyc';
+import { KYCApplication, KYCReviewPayload} from '@/app/types/kyc';
 import { motion } from 'motion/react';
 import DocumentGallery from './DocumentGallery';
 import ActionPanel from './ActionPanel';
@@ -27,7 +27,7 @@ import ActionPanel from './ActionPanel';
 interface ApplicationDetailProps {
   application: KYCApplication;
   onBack: () => void;
-  onReview: (payload: KYCReviewPayload) => void;
+  onReview: (payload: any) => void;
 }
 
 export default function ApplicationDetail({
@@ -241,7 +241,7 @@ export default function ApplicationDetail({
               <CardTitle>Review Notes</CardTitle>
             </CardHeader>
             <CardContent>
-              <Textarea
+              <textarea
                 placeholder="Add notes about this application..."
                 value={reviewNotes}
                 onChange={(e) => setReviewNotes(e.target.value)}

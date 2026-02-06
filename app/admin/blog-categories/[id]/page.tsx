@@ -6,9 +6,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { blogCategoryService } from "../../../services/blog-category.service";
 import { CreateCategoryPayload, BlogCategory } from "../../../types/blog";
 import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
-import { Select } from "../../../components/ui/select";
 import { Card } from "../../../components/ui/card";
 import { RiSaveLine, RiArrowLeftLine } from "react-icons/ri";
 import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
@@ -117,27 +115,30 @@ export default function EditCategoryPage() {
       <form onSubmit={handleSubmit} className="max-w-2xl">
         <Card className="p-6">
           <div className="space-y-4">
-            <div>
+<div>
               <Label htmlFor="name">Name *</Label>
-              <Input
+              <input
+                type="text"
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Enter category name"
-                className={errors.name ? "border-red-500" : ""}
+                className={`w-full px-4 py-2.5 bg-white border text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors ${errors.name ? "border-red-500" : "border-gray-300"}`}
               />
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
 
             <div>
               <Label htmlFor="status">Status</Label>
-              <Select
+              <select
+                id="status"
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-              </Select>
+              </select>
             </div>
 
             <div className="text-sm text-gray-500">

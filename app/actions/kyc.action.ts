@@ -87,7 +87,7 @@ export async function getAdminKYCApplication(
 }
 
 // Get KYC statistics
-export async function getAdminKYCStats(): Promise<KYCResponse<KYCStats>> {
+export async function getAdminKYCStats(): Promise<KYCResponse<any>> {
   try {
     const token = await getAuthTokenClient();
     if (!token) {
