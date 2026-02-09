@@ -239,27 +239,25 @@ export default function BlogsPage() {
       </div>
 
       {/* Pagination */}
-      {pagination.total > pagination.limit && (
-        <div className="flex justify-center items-center mt-4 gap-2">
-          <button
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={pagination.page === 1}
-            className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
-          >
-            Previous
-          </button>
-          <span className="px-4 py-2 text-gray-700">
-            Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
-          </span>
-          <button
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-            className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <div className="flex justify-center items-center mt-4 gap-2">
+        <button
+          onClick={() => handlePageChange(pagination.page - 1)}
+          disabled={pagination.page === 1}
+          className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+        >
+          Previous
+        </button>
+        <span className="px-4 py-2 text-gray-700">
+          Page {pagination.page} of {Math.max(1, Math.ceil(pagination.total / pagination.limit))}
+        </span>
+        <button
+          onClick={() => handlePageChange(pagination.page + 1)}
+          disabled={pagination.page >= Math.max(1, Math.ceil(pagination.total / pagination.limit))}
+          className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
