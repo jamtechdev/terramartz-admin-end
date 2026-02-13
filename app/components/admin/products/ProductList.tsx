@@ -85,6 +85,24 @@ export default function ProductList() {
     }
   };
 
+  const handleToggleApproval = async (productId: string, currentApproved: boolean) => {
+    if (!token) return;
+    
+    try {
+      await productService.toggleProductApproval(productId, !currentApproved, token);
+      
+      setProducts(prevProducts =>
+        prevProducts.map(product =>
+          product._id === productId
+            ? { ...product, adminApproved: !currentApproved }
+            : product
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling approval:", error);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -139,6 +157,17 @@ export default function ProductList() {
               <option value="">All Products</option>
               <option value="true">Organic Only</option>
               <option value="false">Non-Organic</option>
+            </select>
+
+            {/* Admin Approved */}
+            <select
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              value={filters.adminApproved?.toString() || ''}
+              onChange={(e) => handleFilterChange('adminApproved', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
+            >
+              <option value="">All Products</option>
+              <option value="true">Approved Only</option>
+              <option value="false">Not Approved</option>
             </select>
 
             {/* Featured */}
@@ -229,9 +258,12 @@ export default function ProductList() {
                       No Image
                     </div>
                   )}
-                  
+                   
                   {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    {product.adminApproved && (
+                      <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded">Approved</span>
+                    )}
                     {product.organic && (
                       <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">Organic</span>
                     )}
@@ -239,7 +271,9 @@ export default function ProductList() {
                       <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">Featured</span>
                     )}
                   </div>
-                  
+                   
+                  {/* Status */}
+                 
                   {/* Status */}
                   <div className="absolute top-2 right-2">
                     <span className={`text-xs px-2 py-1 rounded ${
@@ -281,6 +315,7 @@ export default function ProductList() {
                     Seller: {product.createdBy?.email || 'N/A'}
                   </p>
                   
+                                      
                   {/* Actions */}
                   <div className="flex gap-2">
                     <button
@@ -289,12 +324,16 @@ export default function ProductList() {
                     >
                       View
                     </button>
-                    {/* <button
-                      onClick={() => router.push(`/admin/products/${product._id}/edit`)}
-                      className="flex-1 bg-green-500 text-white py-2 px-3 rounded text-sm hover:bg-green-600"
+                    <button
+                      onClick={() => handleToggleApproval(product._id, product.adminApproved || false)}
+                      className={`flex-1 py-2 px-3 rounded text-sm ${
+                        product.adminApproved
+                          ? 'bg-red-500 text-white hover:bg-red-600'
+                          : 'bg-green-500 text-white hover:bg-green-600'
+                      }`}
                     >
-                      Edit
-                    </button> */}
+                      {product.adminApproved ? 'Disapprove' : 'Approve'}
+                    </button>
                   </div>
                 </div>
               </div>
