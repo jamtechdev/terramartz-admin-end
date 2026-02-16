@@ -20,7 +20,7 @@ export default function ProductView({ productId }: ProductViewProps) {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!token || !productId) return;
-      
+
       setLoading(true);
       setError(null);
       try {
@@ -39,7 +39,7 @@ export default function ProductView({ productId }: ProductViewProps) {
 
   const getImageUrl = (imageName: string) => {
     // If the image is already a full URL (starts with http), return as is
-    if (imageName.startsWith('http')) {
+    if (imageName.startsWith("http")) {
       return imageName;
     }
     // Otherwise, construct the URL with the S3 direct URL from env
@@ -48,11 +48,11 @@ export default function ProductView({ productId }: ProductViewProps) {
 
   const handleStatusChange = async (newStatus: string) => {
     if (!token || !product) return;
-    
+
     setStatusLoading(true);
     try {
       await productService.updateProductStatus(product._id, newStatus, token);
-      setProduct(prev => prev ? { ...prev, status: newStatus } : null);
+      setProduct((prev) => (prev ? { ...prev, status: newStatus } : null));
     } catch (error) {
       console.error("Error updating product status:", error);
     } finally {
@@ -107,7 +107,8 @@ export default function ProductView({ productId }: ProductViewProps) {
                   alt={product.title}
                   className="w-full h-full object-cover rounded-lg cursor-pointer border-1 border-gray-400"
                   onClick={() => {
-                    const nextIndex = (selectedImageIndex + 1) % product.productImages.length;
+                    const nextIndex =
+                      (selectedImageIndex + 1) % product.productImages.length;
                     setSelectedImageIndex(nextIndex);
                   }}
                 />
@@ -117,7 +118,7 @@ export default function ProductView({ productId }: ProductViewProps) {
                 </div>
               )}
             </div>
-            
+
             {/* Thumbnail Images */}
             {product.productImages.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
@@ -127,7 +128,9 @@ export default function ProductView({ productId }: ProductViewProps) {
                     src={getImageUrl(image)}
                     alt={`${product.title} ${index + 1}`}
                     className={`w-full h-20 object-cover rounded cursor-pointer border-2 transition ${
-                      selectedImageIndex === index ? 'border-green-500' : 'border-gray-300 hover:border-gray-400'
+                      selectedImageIndex === index
+                        ? "border-green-500"
+                        : "border-gray-300 hover:border-gray-400"
                     }`}
                     onClick={() => setSelectedImageIndex(index)}
                   />
@@ -139,12 +142,18 @@ export default function ProductView({ productId }: ProductViewProps) {
           {/* Product Details */}
           <div>
             <div className="flex items-start justify-between mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">{product.title}</h1>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                product.status === 'active' ? 'bg-green-100 text-green-800' :
-                product.status === 'inactive' ? 'bg-red-100 text-red-800' :
-                'bg-yellow-100 text-yellow-800'
-              }`}>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {product.title}
+              </h1>
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  product.status === "active"
+                    ? "bg-green-100 text-green-800"
+                    : product.status === "inactive"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
                 {product.status}
               </span>
             </div>
@@ -152,27 +161,41 @@ export default function ProductView({ productId }: ProductViewProps) {
             {/* Badges */}
             <div className="flex gap-2 mb-4">
               {product.organic && (
-                <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">Organic</span>
+                <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                  Organic
+                </span>
               )}
               {product.featured && (
-                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm">Featured</span>
+                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm">
+                  Featured
+                </span>
               )}
-              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">{product.productType}</span>
+              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                {product.productType}
+              </span>
             </div>
 
             {/* Price */}
             <div className="mb-6">
               <div className="flex items-center gap-3">
-                <span className="text-3xl font-bold text-green-600">${product.price}</span>
+                <span className="text-3xl font-bold text-green-600">
+                  ${product.price}
+                </span>
                 {product.originalPrice !== product.price && (
-                  <span className="text-xl text-gray-500 line-through">${product.originalPrice}</span>
+                  <span className="text-xl text-gray-500 line-through">
+                    ${product.originalPrice}
+                  </span>
                 )}
               </div>
               {product.discount > 0 && (
                 <p className="text-sm text-green-600">
-                  Save ${product.discountType === 'percentage' ? 
-                    ((product.originalPrice * product.discount) / 100).toFixed(2) : 
-                    product.discount}
+                  Save $
+                  {product.discountType === "percentage"
+                    ? (
+                        (product.originalPrice * product.discount) /
+                        100
+                      ).toFixed(2)
+                    : product.discount}
                 </p>
               )}
             </div>
@@ -180,14 +203,16 @@ export default function ProductView({ productId }: ProductViewProps) {
             {/* Description */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2">Description</h3>
-              <p className="text-gray-700 leading-relaxed">{product.description}</p>
+              <p className="text-gray-700 leading-relaxed">
+                {product.description}
+              </p>
             </div>
 
             {/* Product Info Grid */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <h4 className="font-medium text-gray-900">Category</h4>
-                <p className="text-gray-600">{product.category.name}</p>
+                <p className="text-gray-600">{product.category?.name}</p>
               </div>
               <div>
                 <h4 className="font-medium text-gray-900">Stock Quantity</h4>
@@ -222,7 +247,10 @@ export default function ProductView({ productId }: ProductViewProps) {
                 <h4 className="font-medium text-gray-900 mb-2">Tags</h4>
                 <div className="flex flex-wrap gap-2">
                   {product.tags.map((tag, index) => (
-                    <span key={index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm">
+                    <span
+                      key={index}
+                      className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -239,10 +267,9 @@ export default function ProductView({ productId }: ProductViewProps) {
             <div>
               <h4 className="font-medium text-gray-900">Name</h4>
               <p className="text-gray-600">
-                {product.createdBy?.firstName && product.createdBy?.lastName 
+                {product.createdBy?.firstName && product.createdBy?.lastName
                   ? `${product.createdBy.firstName} ${product.createdBy.lastName}`
-                  : 'N/A'
-                }
+                  : "N/A"}
               </p>
             </div>
             <div>

@@ -65,6 +65,8 @@ export interface Product {
   farmName?: string;
   discount: number;
   discountType: string;
+  adminApproved?: boolean;
+  approvedBy?: string;
   __v?: number;
 }
 
@@ -83,6 +85,7 @@ export const productService = {
   getRequestedProducts,
   approveProduct,
   rejectProduct,
+  toggleProductApproval,
   updateProductStatus,
   exportProductsCSV,
 };
@@ -156,6 +159,21 @@ async function rejectProduct(productId: string, token?: string) {
   const response = await axios.patch(
     `${BASE_URL}/api/admin/products/${productId}/approval`,
     { approved: false },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    }
+  );
+
+  return response.data;
+}
+
+async function toggleProductApproval(productId: string, approved: boolean, token?: string) {
+  const response = await axios.patch(
+    `${BASE_URL}/api/admin/products/${productId}/approval`,
+    { approved },
     {
       headers: {
         "Content-Type": "application/json",
