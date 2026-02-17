@@ -1,4 +1,15 @@
-import { getAuthTokenClient } from '@/app/utils/authClient';
+import { getAuthTokenClient, validateAndGetToken, removeAuthTokenClient } from '@/app/utils/authClient';
+
+// Helper to handle authentication errors
+function handleAuthError(error: string) {
+  console.error('Authentication error:', error);
+  removeAuthTokenClient();
+
+  // Redirect to login page
+  if (typeof window !== 'undefined') {
+    window.location.href = '/admin/login';
+  }
+}
 
 interface ContactInquiry {
   _id: string;
@@ -53,8 +64,9 @@ export async function getContactInquiries(
   filters: ContactInquiryFilters = {}
 ): Promise<ContactResponse<{ inquiries: ContactInquiry[] }>> {
   try {
-    const token = await getAuthTokenClient();
+    const token = await validateAndGetToken();
     if (!token) {
+      handleAuthError('No valid authentication token');
       return { status: 'error', error: 'Authentication required' };
     }
 
@@ -89,11 +101,14 @@ export async function getContactInquiries(
     const data = await res.json();
 
     if (!res.ok) {
+      if (res.status === 401) {
+        handleAuthError(data.message || 'Authentication failed');
+      }
       return { status: 'error', error: data.message || 'Failed to fetch inquiries' };
     }
 
-    return { 
-      status: 'success', 
+    return {
+      status: 'success',
       data: data.data, // The inquiries are in the data.data property
       results: data.results,
       total: data.total,
@@ -106,8 +121,9 @@ export async function getContactInquiries(
 
 export async function getContactInquiryStats(): Promise<ContactResponse<ContactStats>> {
   try {
-    const token = await getAuthTokenClient();
+    const token = await validateAndGetToken();
     if (!token) {
+      handleAuthError('No valid authentication token');
       return { status: 'error', error: 'Authentication required' };
     }
 
@@ -121,13 +137,16 @@ export async function getContactInquiryStats(): Promise<ContactResponse<ContactS
     const data = await res.json();
 
     if (!res.ok) {
+      if (res.status === 401) {
+        handleAuthError(data.message || 'Authentication failed');
+      }
       return { status: 'error', error: data.message || 'Failed to fetch stats' };
     }
 
     // Handle the response structure properly - the stats are in data.statistics
     const statsData = data.data?.statistics || {};
-    return { 
-      status: 'success', 
+    return {
+      status: 'success',
       data: {
         total: (statsData.pending || 0) + (statsData.in_progress || 0), // Calculate total from known values
         pending: statsData.pending || 0,
@@ -142,8 +161,9 @@ export async function getContactInquiryStats(): Promise<ContactResponse<ContactS
 
 export async function getContactInquiryById(ticketId: string): Promise<ContactResponse<ContactInquiry>> {
   try {
-    const token = await getAuthTokenClient();
+    const token = await validateAndGetToken();
     if (!token) {
+      handleAuthError('No valid authentication token');
       return { status: 'error', error: 'Authentication required' };
     }
 
@@ -157,6 +177,9 @@ export async function getContactInquiryById(ticketId: string): Promise<ContactRe
     const data = await res.json();
 
     if (!res.ok) {
+      if (res.status === 401) {
+        handleAuthError(data.message || 'Authentication failed');
+      }
       return { status: 'error', error: data.message || 'Failed to fetch inquiry' };
     }
 
@@ -169,8 +192,9 @@ export async function getContactInquiryById(ticketId: string): Promise<ContactRe
 
 export async function updateContactInquiryStatus(ticketId: string, status: string): Promise<ContactResponse<ContactInquiry>> {
   try {
-    const token = await getAuthTokenClient();
+    const token = await validateAndGetToken();
     if (!token) {
+      handleAuthError('No valid authentication token');
       return { status: 'error', error: 'Authentication required' };
     }
 
@@ -186,6 +210,9 @@ export async function updateContactInquiryStatus(ticketId: string, status: strin
     const data = await res.json();
 
     if (!res.ok) {
+      if (res.status === 401) {
+        handleAuthError(data.message || 'Authentication failed');
+      }
       return { status: 'error', error: data.message || 'Failed to update status' };
     }
 
@@ -198,8 +225,9 @@ export async function updateContactInquiryStatus(ticketId: string, status: strin
 
 export async function assignContactInquiry(ticketId: string, newAdminId: string | null): Promise<ContactResponse<ContactInquiry>> {
   try {
-    const token = await getAuthTokenClient();
+    const token = await validateAndGetToken();
     if (!token) {
+      handleAuthError('No valid authentication token');
       return { status: 'error', error: 'Authentication required' };
     }
 
@@ -216,6 +244,9 @@ export async function assignContactInquiry(ticketId: string, newAdminId: string 
     console.log('Assign API raw response:', JSON.stringify(data, null, 2)); // Debug log
 
     if (!res.ok) {
+      if (res.status === 401) {
+        handleAuthError(data.message || 'Authentication failed');
+      }
       return { status: 'error', error: data.message || 'Failed to assign inquiry' };
     }
 
@@ -232,8 +263,9 @@ export async function assignContactInquiry(ticketId: string, newAdminId: string 
 // Add this new function to fetch all available admins
 export async function getAllAdmins(page: number = 1, limit: number = 10): Promise<any> {
   try {
-    const token = await getAuthTokenClient();
+    const token = await validateAndGetToken();
     if (!token) {
+      handleAuthError('No valid authentication token');
       return { status: 'error', error: 'Authentication required' };
     }
 
@@ -247,6 +279,9 @@ export async function getAllAdmins(page: number = 1, limit: number = 10): Promis
     const data = await res.json();
 
     if (!res.ok) {
+      if (res.status === 401) {
+        handleAuthError(data.message || 'Authentication failed');
+      }
       return { status: 'error', error: data.message || 'Failed to fetch admins' };
     }
 
@@ -261,8 +296,9 @@ export async function getMyTickets(
   filters: ContactInquiryFilters = {}
 ): Promise<ContactResponse<{ tickets: ContactInquiry[] }>> {
   try {
-    const token = await getAuthTokenClient();
+    const token = await validateAndGetToken();
     if (!token) {
+      handleAuthError('No valid authentication token');
       return { status: 'error', error: 'Authentication required' };
     }
 
@@ -297,12 +333,15 @@ export async function getMyTickets(
     const data = await res.json();
 
     if (!res.ok) {
+      if (res.status === 401) {
+        handleAuthError(data.message || 'Authentication failed');
+      }
       return { status: 'error', error: data.message || 'Failed to fetch assigned tickets' };
     }
 
-    return { 
-      status: 'success', 
-      data: data.data, 
+    return {
+      status: 'success',
+      data: data.data,
       results: data.results,
       total: data.total,
       pagination: data.pagination
