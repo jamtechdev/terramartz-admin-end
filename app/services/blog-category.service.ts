@@ -32,12 +32,16 @@ async function getCategories(filters: BlogFilters = {}, token?: string): Promise
 
   // Handle the actual API response structure
   const apiData = response.data;
+  const page = typeof filters.page === 'number' ? filters.page : Number(apiData.page ?? 5);
+  const limit = typeof filters.limit === 'number' ? filters.limit : Number(apiData.limit ?? 5);
+  const results = Number(apiData.results ?? (apiData.data?.categories?.length ?? 0));
+  const total = Number(apiData.total ?? apiData.data?.total ?? results);
   return {
     status: apiData.status,
-    page: 1,
-    limit: 10,
-    total: apiData.results || 0,
-    results: apiData.results || 0,
+    page,
+    limit,
+    total,
+    results,
     categories: apiData.data?.categories || []
   };
 }

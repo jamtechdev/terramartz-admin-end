@@ -21,12 +21,17 @@ export default function BlogCategoriesPage() {
   const { token, hasPermission, user } = useAuth();
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5,
+    total: 0,
+    results: 0,
+  });
   const [filters, setFilters] = useState<BlogFilters>({
     page: 1,
-    limit: 10,
+    limit: 5,
     search: "",
   });
-  const [totalPages, setTotalPages] = useState(0);
 
   const isSuperAdmin = user?.role === "Super Admin";
 
@@ -39,13 +44,25 @@ export default function BlogCategoriesPage() {
       setLoading(true);
       const response = await blogCategoryService.getCategories(filters, token || undefined);
       setCategories(response.categories || []);
-      setTotalPages(Math.ceil((response.total || 0) / (filters.limit || 10)));
+      setPagination({
+        page: response.page,
+        limit: response.limit,
+        total: response.total,
+        results: response.results,
+      });
     } catch (error) {
       console.error("Error fetching categories:", error);
       setCategories([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1) return;
+    const lastPage = Math.max(1, Math.ceil((pagination.total || 0) / (pagination.limit || 5)));
+    if (newPage > lastPage) return;
+    setFilters(prev => ({ ...prev, page: newPage }));
   };
 
   const handleStatusToggle = async (categoryId: string, currentStatus: string) => {
@@ -159,20 +176,25 @@ export default function BlogCategoriesPage() {
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <Button
-              key={page}
-              variant={filters.page === page ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilters({ ...filters, page })}
-            >
-              {page}
-            </Button>
-          ))}
-        </div>
-      )}
+      <div className="flex justify-center items-center mt-4 gap-2">
+        <button
+          onClick={() => handlePageChange(pagination.page - 1)}
+          disabled={pagination.page === 1}
+          className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+        >
+          Previous
+        </button>
+        <span className="px-4 py-2 text-gray-700">
+          Page {pagination.page} of {Math.max(1, Math.ceil(pagination.total / pagination.limit))}
+        </span>
+        <button
+          onClick={() => handlePageChange(pagination.page + 1)}
+          disabled={pagination.page >= Math.max(1, Math.ceil(pagination.total / pagination.limit))}
+          className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

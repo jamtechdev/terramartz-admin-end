@@ -41,14 +41,45 @@ interface ContactStats {
   resolved: number;
 }
 
-export async function getContactInquiries(page: number = 1, limit: number = 10): Promise<ContactResponse<{ inquiries: ContactInquiry[] }>> {
+export interface ContactInquiryFilters {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  inquiryType?: string;
+}
+
+export async function getContactInquiries(
+  filters: ContactInquiryFilters = {}
+): Promise<ContactResponse<{ inquiries: ContactInquiry[] }>> {
   try {
     const token = await getAuthTokenClient();
     if (!token) {
       return { status: 'error', error: 'Authentication required' };
     }
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/?page=${page}&limit=${limit}`, {
+    const params = new URLSearchParams();
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 10;
+
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+
+    if (filters.search) {
+      params.append('search', filters.search);
+    }
+
+    if (filters.status) {
+      params.append('status', filters.status);
+    }
+
+    if (filters.inquiryType) {
+      params.append('inquiryType', filters.inquiryType);
+    }
+
+    const queryString = params.toString();
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact?${queryString}`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
@@ -226,14 +257,37 @@ export async function getAllAdmins(page: number = 1, limit: number = 10): Promis
 }
 
 // Get tickets assigned to the current user
-export async function getMyTickets(page: number = 1, limit: number = 10): Promise<ContactResponse<{ tickets: ContactInquiry[] }>> {
+export async function getMyTickets(
+  filters: ContactInquiryFilters = {}
+): Promise<ContactResponse<{ tickets: ContactInquiry[] }>> {
   try {
     const token = await getAuthTokenClient();
     if (!token) {
       return { status: 'error', error: 'Authentication required' };
     }
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/my-tickets?page=${page}&limit=${limit}`, {
+    const params = new URLSearchParams();
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 10;
+
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+
+    if (filters.search) {
+      params.append('search', filters.search);
+    }
+
+    if (filters.status) {
+      params.append('status', filters.status);
+    }
+
+    if (filters.inquiryType) {
+      params.append('inquiryType', filters.inquiryType);
+    }
+
+    const queryString = params.toString();
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/my-tickets?${queryString}`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,

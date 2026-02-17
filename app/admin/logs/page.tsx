@@ -465,8 +465,9 @@ export default function LogsPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto rounded-xl border border-gray-200">
-                <table className="min-w-full text-sm">
+              <div className="w-full overflow-x-auto">
+                  <div className="min-w-[800px]">
+                <table className="w-full text-sm rounded-xl border border-gray-200 bg-white shadow-sm">
                   <thead>
                     <tr className="bg-green-700 text-white">
                       <th className="px-6 py-4 text-left font-semibold">
@@ -512,7 +513,7 @@ export default function LogsPage() {
                         key={index}
                         className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                       >
-                        <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
+                        <td className="px-6 py-4 text-sm text-gray-700">
                           {formatDateTime(log.timestamp || log.time)}
                         </td>
                         {!advancedMode && (
@@ -554,7 +555,7 @@ export default function LogsPage() {
                           </div>
                         </td>
                         <td
-                          className="px-6 py-4 text-sm text-gray-700 max-w-xs truncate"
+                          className="px-6 py-4 text-sm text-gray-700 max-w-xs"
                           title={log.url || log.path || "-"}
                         >
                           <code className="text-xs bg-gray-100 px-2 py-1 rounded">
@@ -585,6 +586,7 @@ export default function LogsPage() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
 
               {/* Pagination */}
