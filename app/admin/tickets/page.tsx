@@ -9,8 +9,8 @@ import {
   updateContactInquiryStatus,
   getContactInquiryById,
   assignContactInquiry,
-  getAllAdmins,
-  getMyTickets
+  getAllAdmins
+  // getMyTickets
 } from '@/app/services/ticket.service';
 import { getUserRoleFromToken } from '@/app/utils/authClient';
 import { toast } from 'sonner';
@@ -62,6 +62,9 @@ export default function TicketPage() {
   const [availableAdmins, setAvailableAdmins] = useState<any[]>([]); // State for available admins
   const [showAdminDropdown, setShowAdminDropdown] = useState(false); // State to toggle dropdown visibility
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [inquiryTypeFilter, setInquiryTypeFilter] = useState('');
 
   // Fetch available admins
   useEffect(() => {
@@ -127,62 +130,87 @@ export default function TicketPage() {
     fetchAdmins();
   }, []);
 
-  // Fetch initial data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+  const fetchTickets = async (overrideFilters?: { search?: string; status?: string; inquiryType?: string }) => {
+    try {
+      setLoading(true);
+      
+      const role = await getUserRoleFromToken();
+      setUserRole(role);
+
+      const effectiveSearch = overrideFilters && Object.prototype.hasOwnProperty.call(overrideFilters, 'search')
+        ? overrideFilters.search || ''
+        : search;
+
+      const effectiveStatus = overrideFilters && Object.prototype.hasOwnProperty.call(overrideFilters, 'status')
+        ? overrideFilters.status || ''
+        : statusFilter;
+
+      const effectiveInquiryType = overrideFilters && Object.prototype.hasOwnProperty.call(overrideFilters, 'inquiryType')
+        ? overrideFilters.inquiryType || ''
+        : inquiryTypeFilter;
+
+      const baseFilters: any = {
+        page: 1,
+        limit: 10
+      };
+
+      if (effectiveSearch && effectiveSearch.trim()) {
+        baseFilters.search = effectiveSearch.trim();
+      }
+
+      if (effectiveStatus) {
+        baseFilters.status = effectiveStatus;
+      }
+
+      if (effectiveInquiryType) {
+        baseFilters.inquiryType = effectiveInquiryType;
+      }
+      
+      // if (role === 'Super Admin') {
+        const statsRes = await getContactInquiryStats();
+        if (statsRes.status === 'success' && statsRes.data) {
+          setStats(statsRes.data);
+        }
         
-        const role = await getUserRoleFromToken();
+        const allRes = await getContactInquiries(baseFilters);
         
-        if (role === 'Super Admin') {
-          // Get stats
-          const statsRes = await getContactInquiryStats();
-          if (statsRes.status === 'success' && statsRes.data) {
-            setStats(statsRes.data);
-          }
+        if (allRes.status === 'success' && allRes.data && allRes.data.inquiries) {
+          setInquiries(allRes.data.inquiries);
           
-          // Get all inquiries from main endpoint
-          const allRes = await getContactInquiries(1, 10);
-          
-          if (allRes.status === 'success' && allRes.data && allRes.data.inquiries) {
-            setInquiries(allRes.data.inquiries);
-            
-            // If stats API failed or didn't return real data, calculate from inquiries
-            if (statsRes.status !== 'success' || (statsRes.data && statsRes.data.total === 0)) {
-              const calculatedStats = calculateStatsFromInquiries(allRes.data.inquiries);
-              setStats(calculatedStats);
-            }
-          } else {
-            setInquiries([]);
+          if (statsRes.status !== 'success' || (statsRes.data && statsRes.data.total === 0)) {
+            const calculatedStats = calculateStatsFromInquiries(allRes.data.inquiries);
+            setStats(calculatedStats);
           }
         } else {
-          // Fetch assigned tickets for other roles
-          const myRes = await getMyTickets(1, 10);
-          
-          if (myRes.status === 'success' && myRes.data && myRes.data.tickets) {
-            setInquiries(myRes.data.tickets);
-            const calculatedStats = calculateStatsFromInquiries(myRes.data.tickets);
-            setStats(calculatedStats);
-          } else {
-            setInquiries([]);
-            setStats({
-              total: 0,
-              pending: 0,
-              inProgress: 0,
-              resolved: 0
-            });
-          }
+          setInquiries([]);
         }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load data');
-        toast.error(err.message || 'Failed to load data');
-      } finally {
-        setLoading(false);
-      }
-    };
+      // } else {
+      //   const myRes = await getMyTickets(baseFilters);
+        
+      //   if (myRes.status === 'success' && myRes.data && myRes.data.tickets) {
+      //     setInquiries(myRes.data.tickets);
+      //     const calculatedStats = calculateStatsFromInquiries(myRes.data.tickets);
+      //     setStats(calculatedStats);
+      //   } else {
+      //     setInquiries([]);
+      //     setStats({
+      //       total: 0,
+      //       pending: 0,
+      //       inProgress: 0,
+      //       resolved: 0
+      //     });
+      //   }
+      // }
+    } catch (err: any) {
+      setError(err.message || 'Failed to load data');
+      toast.error(err.message || 'Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    fetchTickets();
   }, []);
 
   const getStatusColor = (status: string) => {
@@ -230,50 +258,23 @@ export default function TicketPage() {
 
   const handleRefresh = async () => {
     try {
-      setLoading(true);
-      
-      const role = await getUserRoleFromToken();
-      setUserRole(role);
-
-      if (role === 'Super Admin') {
-        // Get stats
-        const statsRes = await getContactInquiryStats();
-        if (statsRes.status === 'success' && statsRes.data) {
-          setStats(statsRes.data);
-        }
-        
-        // Get all inquiries from main endpoint
-        const allRes = await getContactInquiries(1, 10);
-        console.log('Refresh - Raw API Response:', allRes); // Debug log
-        
-        if (allRes.status === 'success' && allRes.data && allRes.data.inquiries) {
-          setInquiries(allRes.data.inquiries);
-          
-          // If stats API failed or didn't return real data, calculate from inquiries
-          if (statsRes.status !== 'success' || (statsRes.data && statsRes.data.total === 0)) {
-            const calculatedStats = calculateStatsFromInquiries(allRes.data.inquiries);
-            setStats(calculatedStats);
-          }
-        } else {
-          setInquiries([]);
-        }
-      } else {
-        const myRes = await getMyTickets(1, 10);
-        if (myRes.status === 'success' && myRes.data && myRes.data.tickets) {
-          setInquiries(myRes.data.tickets);
-          const calculatedStats = calculateStatsFromInquiries(myRes.data.tickets);
-          setStats(calculatedStats);
-        } else {
-          setInquiries([]);
-        }
-      }
-      
+      await fetchTickets();
       toast.success('Data refreshed successfully');
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh data');
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const handleFilterSubmit = (e: any) => {
+    e.preventDefault();
+    fetchTickets();
+  };
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setStatusFilter('');
+    setInquiryTypeFilter('');
+    fetchTickets({ search: '', status: '', inquiryType: '' });
   };
 
   const handleViewDetails = async (inquiryId: string) => {
@@ -659,11 +660,62 @@ export default function TicketPage() {
           <p className="text-gray-600 mt-1">Manage customer support tickets</p>
         </div>
         
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+          <form onSubmit={handleFilterSubmit} className="flex flex-wrap items-center gap-3">
+            <input
+              type="text"
+              placeholder="Search by name, email, subject or message"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 min-w-[240px] text-sm transition-colors"
+            />
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors"
+            >
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+            </select>
+
+            <select
+              value={inquiryTypeFilter}
+              onChange={(e) => setInquiryTypeFilter(e.target.value)}
+              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors"
+            >
+              <option value="">All Inquiry Types</option>
+              <option value="General Inquiry">General Inquiry</option>
+              <option value="Product Question">Product Question</option>
+              <option value="Order Support">Order Support</option>
+              <option value="Partnership">Partnership</option>
+              <option value="Complaint">Complaint</option>
+              <option value="Feedback">Feedback</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              Apply
+            </button>
+
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50"
+            >
+              Clear
+            </button>
+          </form>
+
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 self-start md:self-auto"
           >
             <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
