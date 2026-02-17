@@ -22,6 +22,7 @@ import {
   RiArrowRightSLine,
   RiArticleLine,
   RiPriceTagLine,
+  RiFileListLine,
 } from "react-icons/ri";
 import { FaUsersGear } from "react-icons/fa6";
 
@@ -112,10 +113,16 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       icon: <RiTicketLine size={20} />,
       requiredModule: "Support",
     },
+      // {
+      //   name: "Reports",
+      //   href: "/admin/reports",  
+      //   icon: <RiBarChartLine size={20} />,
+      //   requiredModule: "Dashboard",
+      // },
     {
-      name: "Reports",
-      href: "/admin/reports",
-      icon: <RiBarChartLine size={20} />,
+      name: "Logs",
+      href: "/admin/logs",
+      icon: <RiFileListLine size={20} />,
       requiredModule: "Dashboard",
     },
     {
@@ -211,10 +218,10 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
                 <button
                   onClick={() => {
                     if (collapsed) return;
-                    setExpandedItems(prev => 
-                      prev.includes(item.name) 
-                        ? prev.filter(name => name !== item.name)
-                        : [...prev, item.name]
+                    setExpandedItems((prev) =>
+                      prev.includes(item.name)
+                        ? prev.filter((name) => name !== item.name)
+                        : [...prev, item.name],
                     );
                   }}
                   className={`w-full flex items-center gap-3 rounded-lg transition
@@ -225,7 +232,11 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
                   {!collapsed && (
                     <>
                       <span className="flex-1 text-left">{item.name}</span>
-                      {isExpanded ? <RiArrowDownSLine size={16} /> : <RiArrowRightSLine size={16} />}
+                      {isExpanded ? (
+                        <RiArrowDownSLine size={16} />
+                      ) : (
+                        <RiArrowRightSLine size={16} />
+                      )}
                     </>
                   )}
                 </button>
@@ -241,7 +252,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
                   {!collapsed && <span>{item.name}</span>}
                 </Link>
               )}
-              
+
               {/* Submenu */}
               {hasChildren && isExpanded && !collapsed && (
                 <div className="ml-6 mt-1 space-y-1">
