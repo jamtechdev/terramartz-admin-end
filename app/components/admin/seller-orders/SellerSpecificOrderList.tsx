@@ -66,6 +66,25 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
         return `${process.env.NEXT_PUBLIC_S3_DIRECT_URL}/products/${imageName}`;
     };
 
+    const getPaymentStatusColor = (paymentStatus: string) => {
+        switch (paymentStatus?.toLowerCase()) {
+            case 'paid':
+                return 'bg-green-100 text-green-700 border border-green-300';
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-700 border border-yellow-300';
+            case 'failed':
+                return 'bg-red-100 text-red-700 border border-red-300';
+            case 'refunded':
+                return 'bg-purple-100 text-purple-700 border border-purple-300';
+            case 'partially_refunded':
+                return 'bg-indigo-100 text-indigo-700 border border-indigo-300';
+            case 'disputed':
+                return 'bg-orange-100 text-orange-700 border border-orange-300';
+            default:
+                return 'bg-gray-100 text-gray-700 border border-gray-300';
+        }
+    };
+
     return (
         <div className="space-y-4">
             {seller && (
@@ -114,6 +133,9 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                         <option value="pending">Pending</option>
                         <option value="paid">Paid</option>
                         <option value="failed">Failed</option>
+                        <option value="refunded">Refunded</option>
+                        <option value="partially_refunded">Partially Refunded</option>
+                        <option value="disputed">Disputed</option>
                     </select>
                     <button type="submit" className="bg-green-700 text-white px-6 py-2 rounded-lg hover:bg-green-800 transition-colors text-sm font-medium">
                         Filter
@@ -132,16 +154,17 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                                 <th className="px-6 py-4">Buyer</th>
                                 <th className="px-6 py-4 text-center">Items</th>
                                 <th className="px-6 py-4">Total Amount</th>
+                                <th className="px-6 py-4">Payment</th>
                                 <th className="px-6 py-4">Status</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
-                                <tr><td colSpan={7} className="p-10 text-center text-gray-400">Loading orders...</td></tr>
+                                <tr><td colSpan={8} className="p-10 text-center text-gray-400">Loading orders...</td></tr>
                             ) : error ? (
-                                <tr><td colSpan={7} className="p-6 text-center text-red-600">{error}</td></tr>
+                                <tr><td colSpan={8} className="p-6 text-center text-red-600">{error}</td></tr>
                             ) : orders.length === 0 ? (
-                                <tr><td colSpan={7} className="p-6 text-center text-gray-500">No orders found</td></tr>
+                                <tr><td colSpan={8} className="p-6 text-center text-gray-500">No orders found</td></tr>
                             ) : (
                                 orders.map((order) => (
                                     <>
@@ -167,17 +190,22 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 font-bold text-gray-900">${order.totalAmount}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase transition-all whitespace-nowrap ${getPaymentStatusColor(order.paymentStatus)}`}>
+                                                    {order.paymentStatus || 'Pending'}
+                                                </span>
+                                            </td>
                                             <td className="px-6 py-4 capitalize">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'delivered' ? 'bg-blue-100 text-blue-700' :
-                                                        order.status === 'new' ? 'bg-green-100 text-green-700' :
-                                                            order.status === 'shipped' ? 'bg-indigo-100 text-indigo-700' :
-                                                                order.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
-                                                                    order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                                        order.status === 'refunded' ? 'bg-purple-100 text-purple-700' :
-                                                                            order.status === 'return_requested' ? 'bg-orange-100 text-orange-700' :
-                                                                                order.status === 'return_approved' ? 'bg-teal-100 text-teal-700' :
-                                                                                    order.status === 'return_rejected' ? 'bg-rose-100 text-rose-700' :
-                                                                                        'bg-gray-100 text-gray-700'
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${order.status === 'delivered' ? 'bg-blue-100 text-blue-700' :
+                                                    order.status === 'new' ? 'bg-green-100 text-green-700' :
+                                                        order.status === 'shipped' ? 'bg-indigo-100 text-indigo-700' :
+                                                            order.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
+                                                                order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                                    order.status === 'refunded' ? 'bg-purple-100 text-purple-700' :
+                                                                        order.status === 'return_requested' ? 'bg-orange-100 text-orange-700' :
+                                                                            order.status === 'return_approved' ? 'bg-teal-100 text-teal-700' :
+                                                                                order.status === 'return_rejected' ? 'bg-rose-100 text-rose-700' :
+                                                                                    'bg-gray-100 text-gray-700'
                                                     }`}>
                                                     {order.status.replace(/_/g, ' ')}
                                                 </span>
@@ -185,7 +213,7 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                                         </tr>
                                         {expandedOrderId === order._id && (
                                             <tr className="bg-gray-50/50">
-                                                <td colSpan={7} className="px-6 py-6 border-l-4 border-green-600">
+                                                <td colSpan={8} className="px-6 py-6 border-l-4 border-green-600">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                         {/* Buyer & Shipping Info */}
                                                         <div className="space-y-6">
