@@ -100,6 +100,10 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                         <option value="shipped">Shipped</option>
                         <option value="delivered">Delivered</option>
                         <option value="cancelled">Cancelled</option>
+                        <option value="refunded">Refunded</option>
+                        <option value="return_requested">Return Requested</option>
+                        <option value="return_approved">Return Approved</option>
+                        <option value="return_rejected">Return Rejected</option>
                     </select>
                     <select
                         value={paymentStatus}
@@ -163,12 +167,19 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 font-bold text-gray-900">${order.totalAmount}</td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 capitalize">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'delivered' ? 'bg-blue-100 text-blue-700' :
-                                                    order.status === 'new' ? 'bg-green-100 text-green-700' :
-                                                        'bg-yellow-100 text-yellow-700'
+                                                        order.status === 'new' ? 'bg-green-100 text-green-700' :
+                                                            order.status === 'shipped' ? 'bg-indigo-100 text-indigo-700' :
+                                                                order.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
+                                                                    order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                                        order.status === 'refunded' ? 'bg-purple-100 text-purple-700' :
+                                                                            order.status === 'return_requested' ? 'bg-orange-100 text-orange-700' :
+                                                                                order.status === 'return_approved' ? 'bg-teal-100 text-teal-700' :
+                                                                                    order.status === 'return_rejected' ? 'bg-rose-100 text-rose-700' :
+                                                                                        'bg-gray-100 text-gray-700'
                                                     }`}>
-                                                    {order.status}
+                                                    {order.status.replace(/_/g, ' ')}
                                                 </span>
                                             </td>
                                         </tr>
