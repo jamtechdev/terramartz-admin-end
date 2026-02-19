@@ -24,7 +24,7 @@ export default function ProductList() {
 
   const fetchProducts = async () => {
     if (!token) return;
-    
+
     setLoading(true);
     try {
       const response = await productService.getProducts(filters, token);
@@ -69,7 +69,7 @@ export default function ProductList() {
 
   const handleExportCSV = async () => {
     if (!token) return;
-    
+
     try {
       const blob = await productService.exportProductsCSV(token);
       const url = window.URL.createObjectURL(blob);
@@ -87,10 +87,10 @@ export default function ProductList() {
 
   const handleToggleApproval = async (productId: string, currentApproved: boolean) => {
     if (!token) return;
-    
+
     try {
       await productService.toggleProductApproval(productId, !currentApproved, token);
-      
+
       setProducts(prevProducts =>
         prevProducts.map(product =>
           product._id === productId
@@ -107,109 +107,136 @@ export default function ProductList() {
     <div className="p-6">
       <div className="mb-6">
         {/* <h1 className="text-2xl font-bold text-gray-900 mb-4">Products Management</h1> */}
-        
+
         {/* Filters */}
         <div className="bg-white p-4 rounded-lg shadow mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Search */}
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.search || ''}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search Products</label>
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.search || ''}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+              />
+            </div>
 
             {/* Status */}
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.status || ''}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="draft">Draft</option>
-              <option value="pending">Pending</option>
-              <option value="rejected">Rejected</option>
-              <option value="out_of_stock">Out of Stock</option>
-              <option value="archived">Archived</option>
-            </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.status || ''}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="draft">Draft</option>
+                <option value="pending">Pending</option>
+                <option value="rejected">Rejected</option>
+                <option value="out_of_stock">Out of Stock</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
 
             {/* Product Type */}
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.productType || ''}
-              onChange={(e) => handleFilterChange('productType', e.target.value)}
-            >
-              <option value="">All Types</option>
-              <option value="regular">Regular</option>
-              <option value="organic">Organic</option>
-              <option value="premium">Premium</option>
-            </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.productType || ''}
+                onChange={(e) => handleFilterChange('productType', e.target.value)}
+              >
+                <option value="">All Types</option>
+                <option value="regular">Regular</option>
+                <option value="organic">Organic</option>
+                <option value="premium">Premium</option>
+              </select>
+            </div>
 
             {/* Organic */}
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.organic?.toString() || ''}
-              onChange={(e) => handleFilterChange('organic', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
-            >
-              <option value="">All Products</option>
-              <option value="true">Organic Only</option>
-              <option value="false">Non-Organic</option>
-            </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Organic Status</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.organic?.toString() || ''}
+                onChange={(e) => handleFilterChange('organic', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
+              >
+                <option value="">All Products</option>
+                <option value="true">Organic Only</option>
+                <option value="false">Non-Organic</option>
+              </select>
+            </div>
 
             {/* Admin Approved */}
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.adminApproved?.toString() || ''}
-              onChange={(e) => handleFilterChange('adminApproved', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
-            >
-              <option value="">All Products</option>
-              <option value="true">Approved Only</option>
-              <option value="false">Not Approved</option>
-            </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Approval Status</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.adminApproved?.toString() || ''}
+                onChange={(e) => handleFilterChange('adminApproved', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
+              >
+                <option value="">All Products</option>
+                <option value="true">Approved Only</option>
+                <option value="false">Not Approved</option>
+              </select>
+            </div>
 
             {/* Featured */}
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.featured?.toString() || ''}
-              onChange={(e) => handleFilterChange('featured', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
-            >
-              <option value="">All Products</option>
-              <option value="true">Featured Only</option>
-              <option value="false">Not Featured</option>
-            </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Featured Status</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.featured?.toString() || ''}
+                onChange={(e) => handleFilterChange('featured', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
+              >
+                <option value="">All Products</option>
+                <option value="true">Featured Only</option>
+                <option value="false">Not Featured</option>
+              </select>
+            </div>
 
             {/* Min Price */}
-            <input
-              type="number"
-              placeholder="Min Price"
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.minPrice || ''}
-              onChange={(e) => handleFilterChange('minPrice', e.target.value ? Number(e.target.value) : undefined)}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Min Price</label>
+              <input
+                type="number"
+                placeholder="Min Price"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.minPrice || ''}
+                onChange={(e) => handleFilterChange('minPrice', e.target.value ? Number(e.target.value) : undefined)}
+              />
+            </div>
 
             {/* Max Price */}
-            <input
-              type="number"
-              placeholder="Max Price"
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.maxPrice || ''}
-              onChange={(e) => handleFilterChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Max Price</label>
+              <input
+                type="number"
+                placeholder="Max Price"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.maxPrice || ''}
+                onChange={(e) => handleFilterChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
+              />
+            </div>
 
             {/* Items per page */}
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={filters.limit || 10}
-              onChange={(e) => handleFilterChange('limit', Number(e.target.value))}
-            >
-              <option value={10}>10 per page</option>
-              <option value={25}>25 per page</option>
-              <option value={50}>50 per page</option>
-              <option value={100}>100 per page</option>
-            </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Items per page</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={filters.limit || 10}
+                onChange={(e) => handleFilterChange('limit', Number(e.target.value))}
+              >
+                <option value={10}>10 per page</option>
+                <option value={25}>25 per page</option>
+                <option value={50}>50 per page</option>
+                <option value={100}>100 per page</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -258,7 +285,7 @@ export default function ProductList() {
                       No Image
                     </div>
                   )}
-                   
+
                   {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
                     {product.adminApproved && (
@@ -271,21 +298,20 @@ export default function ProductList() {
                       <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">Featured</span>
                     )}
                   </div>
-                   
+
                   {/* Status */}
-                 
+
                   {/* Status */}
                   <div className="absolute top-2 right-2">
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      product.status === 'active' ? 'bg-green-100 text-green-800' :
-                      product.status === 'inactive' ? 'bg-red-100 text-red-800' :
-                      product.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
-                      product.status === 'pending' ? 'bg-blue-100 text-blue-800' :
-                      product.status === 'rejected' ? 'bg-red-200 text-red-900' :
-                      product.status === 'out_of_stock' ? 'bg-orange-100 text-orange-800' :
-                      product.status === 'archived' ? 'bg-gray-100 text-gray-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span className={`text-xs px-2 py-1 rounded ${product.status === 'active' ? 'bg-green-100 text-green-800' :
+                        product.status === 'inactive' ? 'bg-red-100 text-red-800' :
+                          product.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                            product.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                              product.status === 'rejected' ? 'bg-red-200 text-red-900' :
+                                product.status === 'out_of_stock' ? 'bg-orange-100 text-orange-800' :
+                                  product.status === 'archived' ? 'bg-gray-100 text-gray-800' :
+                                    'bg-gray-100 text-gray-800'
+                      }`}>
                       {product.status.replace('_', ' ')}
                     </span>
                   </div>
@@ -295,10 +321,10 @@ export default function ProductList() {
                 <div className="p-4">
                   <h3 className="font-semibold text-lg mb-2 truncate">{product.title}</h3>
                   <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
-                  
+
                   {/* Category */}
                   <p className="text-sm text-gray-500 mb-2">Category: {product.category?.name || 'N/A'}</p>
-                  
+
                   {/* Price */}
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-lg font-bold text-green-600">${product.price}</span>
@@ -306,16 +332,16 @@ export default function ProductList() {
                       <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
                     )}
                   </div>
-                  
+
                   {/* Stock */}
                   <p className="text-sm text-gray-600 mb-2">Stock: {product.stockQuantity}</p>
-                  
+
                   {/* Seller */}
                   <p className="text-sm text-gray-500 mb-3">
                     Seller: {product.createdBy?.email || 'N/A'}
                   </p>
-                  
-                                      
+
+
                   {/* Actions */}
                   <div className="flex gap-2">
                     <button
@@ -326,11 +352,10 @@ export default function ProductList() {
                     </button>
                     <button
                       onClick={() => handleToggleApproval(product._id, product.adminApproved || false)}
-                      className={`flex-1 py-2 px-3 rounded text-sm ${
-                        product.adminApproved
+                      className={`flex-1 py-2 px-3 rounded text-sm ${product.adminApproved
                           ? 'bg-red-500 text-white hover:bg-red-600'
                           : 'bg-green-500 text-white hover:bg-green-600'
-                      }`}
+                        }`}
                     >
                       {product.adminApproved ? 'Disapprove' : 'Approve'}
                     </button>
@@ -350,11 +375,11 @@ export default function ProductList() {
               >
                 Previous
               </button>
-              
+
               <span className="px-4 py-2 text-gray-700">
                 Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
               </span>
-              
+
               <button
                 onClick={() => handlePageChange(pagination.page + 1)}
                 disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
