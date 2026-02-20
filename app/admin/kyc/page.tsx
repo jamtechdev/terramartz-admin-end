@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/app/store';
 import {
@@ -11,7 +11,7 @@ import {
   reviewKYCApplication
 } from '@/app/actions/kyc.action';
 import { KYCReviewPayload } from '@/app/types/kyc';
-import { 
+import {
   setStats,
   setApplications,
   setAdminLoading,
@@ -53,14 +53,17 @@ function transformBackendApplication(backendApp: any): any {
 export default function AdminKYCPage() {
   const router = useRouter();
   const dispatch = useDispatch();
-  
-  const { 
-    stats, 
-    applications, 
-    adminLoading, 
+
+  const {
+    stats,
+    applications,
+    adminLoading,
     adminError,
     filters
   } = useSelector((state: RootState) => state.kyc);
+
+  const searchParams = useSearchParams();
+  const kycId = searchParams.get('id');
 
   const [selectedApp, setSelectedApp] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
@@ -71,13 +74,13 @@ export default function AdminKYCPage() {
     const fetchData = async () => {
       try {
         dispatch(setAdminLoading(true));
-        
+
         // Fetch stats
         const statsResponse = await getAdminKYCStats();
         if (statsResponse.status === 'success' && statsResponse.data) {
           dispatch(setStats(statsResponse.data));
         }
-        
+
         // Fetch applications with submitted status
         const appsResponse = await getAdminKYCApplications({
           ...filters,
@@ -85,7 +88,7 @@ export default function AdminKYCPage() {
           page: 1,
           limit: 10
         });
-        
+
         if (appsResponse.status === 'success' && appsResponse.data) {
           // Transform backend data to frontend format
           const transformedApps = appsResponse.data.applications.map(transformBackendApplication);
@@ -113,7 +116,7 @@ export default function AdminKYCPage() {
       if (statsResponse.status === 'success' && statsResponse.data) {
         dispatch(setStats(statsResponse.data));
       }
-      
+
       // Refresh applications
       const appsResponse = await getAdminKYCApplications({
         ...filters,
@@ -121,7 +124,7 @@ export default function AdminKYCPage() {
         page: 1,
         limit: 10
       });
-      
+
       if (appsResponse.status === 'success' && appsResponse.data) {
         const transformedApps = appsResponse.data.applications.map(transformBackendApplication);
         dispatch(setApplications({
@@ -131,7 +134,7 @@ export default function AdminKYCPage() {
           limit: appsResponse.data.limit
         }));
       }
-      
+
       toast.success('Data refreshed successfully');
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh data');
@@ -154,9 +157,16 @@ export default function AdminKYCPage() {
     }
   };
 
+  // Handle direct navigation to details via query param
+  useEffect(() => {
+    if (kycId) {
+      handleViewDetails(kycId);
+    }
+  }, [kycId]);
+
   const handleApprove = async () => {
     if (!selectedApp) return;
-    
+
     setIsProcessing(true);
     try {
       const payload: KYCReviewPayload = {
@@ -168,7 +178,7 @@ export default function AdminKYCPage() {
           addressVerified: true
         }
       };
-      
+
       const response = await reviewKYCApplication(selectedApp.id, payload);
       if (response.status === 'success' && response.data) {
         const transformedApp = transformBackendApplication(response.data);
@@ -187,17 +197,17 @@ export default function AdminKYCPage() {
 
   const handleReject = async () => {
     if (!selectedApp) return;
-    
+
     const reason = prompt('Please provide a rejection reason:');
     if (!reason) return;
-    
+
     setIsProcessing(true);
     try {
       const payload: KYCReviewPayload = {
         status: 'rejected',
         rejectionReason: reason
       };
-      
+
       const response = await reviewKYCApplication(selectedApp.id, payload);
       if (response.status === 'success' && response.data) {
         const transformedApp = transformBackendApplication(response.data);
@@ -259,12 +269,11 @@ export default function AdminKYCPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Status</p>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  selectedApp.status === 'approved' ? 'bg-green-100 text-green-800' :
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${selectedApp.status === 'approved' ? 'bg-green-100 text-green-800' :
                   selectedApp.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                  selectedApp.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
+                    selectedApp.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                  }`}>
                   {selectedApp.status.charAt(0).toUpperCase() + selectedApp.status.slice(1)}
                 </span>
               </div>
@@ -366,10 +375,9 @@ export default function AdminKYCPage() {
                     <p className="font-medium text-sm">{doc.fileName}</p>
                     <p className="text-xs text-gray-600 mt-1">Type: {doc.documentType}</p>
                     <p className="text-xs text-gray-600">
-                      Status: 
-                      <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
-                        doc.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
+                      Status:
+                      <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${doc.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
                         {doc.verified ? 'Verified' : 'Pending'}
                       </span>
                     </p>
@@ -452,7 +460,7 @@ export default function AdminKYCPage() {
           <h2 className="text-2xl font-bold text-green-700">Submitted Applications</h2>
           <p className="text-gray-600 mt-1">All submitted KYC applications</p>
         </div>
-        
+
         <div>
           {adminLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -468,7 +476,7 @@ export default function AdminKYCPage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Data</h3>
               <p className="text-gray-600 mb-4">{adminError}</p>
-              <Button 
+              <Button
                 onClick={() => window.location.reload()}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
@@ -525,12 +533,11 @@ export default function AdminKYCPage() {
                         {application.businessName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${application.status === 'approved' ? 'bg-green-100 text-green-800' :
                           application.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          application.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                            application.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                          }`}>
                           {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
                         </span>
                       </td>

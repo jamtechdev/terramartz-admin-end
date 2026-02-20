@@ -1,6 +1,6 @@
 "use client";
 
-import { FaAppleAlt, FaDollarSign, FaUsers, FaBoxes } from "react-icons/fa";
+import { FaAppleAlt, FaDollarSign, FaUsers, FaBoxes, FaFileAlt } from "react-icons/fa";
 
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import StatsCard from "../components/dashboard/StatsCard";
@@ -34,6 +34,7 @@ export default function AdminDashboard() {
   const { token, user, hasPermission, loading, isAuthenticated } = useAuth();
 
   const router = useRouter();
+  const vendors = sectionThreeData?.vendorsApproval ?? [];
 
   // Check if user has Dashboard access
   useEffect(() => {
@@ -218,11 +219,10 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4">
                           <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                              purchase.status === "paid"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${purchase.status === "paid"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                              }`}
                           >
                             {purchase.status}
                           </span>
@@ -261,12 +261,108 @@ export default function AdminDashboard() {
         {/* ✅ Only show if user has Vendors permission */}
         {hasPermission("Vendors", "View") && (
           <DashboardCard>
-            <h2 className="text-2xl font-bold mb-6 text-green-700">
-              Vendor Approval Queue
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-green-700">
+                Vendor Approval Queue
+              </h2>
+              <button
+                onClick={() => router.push("/admin/kyc")}
+                className="text-sm font-semibold text-green-600 hover:text-green-800 transition"
+              >
+                View All
+              </button>
+            </div>
+
+            {/* <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+              {sectionThreeData?.vendorsApproval &&
+                sectionThreeData.vendorsApproval.length > 0 ? (
+                <table className="min-w-full text-sm whitespace-nowrap">
+                  <thead>
+                    <tr className="bg-green-700">
+                      <th className="px-6 py-4 text-left font-semibold text-white">
+                        Vendor
+                      </th>
+                      <th className="px-6 py-4 text-left font-semibold text-white">
+                        License
+                      </th>
+                      <th className="px-6 py-4 text-left font-semibold text-white">
+                        Tax ID
+                      </th>
+                      <th className="px-6 py-4 text-left font-semibold text-white">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-right font-semibold text-white">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-gray-100">
+                    {sectionThreeData.vendorsApproval
+                      .slice(0, 3)
+                      .map((vendor) => (
+                        <tr
+                          key={vendor._id}
+                          className="hover:bg-green-50 transition"
+                        >
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            {vendor.vendorName}
+                          </td>
+                          <td className="px-6 py-4 text-green-600">
+                            {vendor.hasLicense ? "✔" : "✘"}
+                          </td>
+                          <td className="px-6 py-4 text-green-600">
+                            {vendor.hasTaxId ? "✔" : "✘"}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${vendor.status === "Pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : vendor.status === "Approved"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                                }`}
+                            >
+                              {vendor.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right space-x-2">
+                            {vendor.status === "Pending" &&
+                              hasPermission("Vendors", "Full") && (
+                                <button
+                                  onClick={() =>
+                                    router.push(`/admin/kyc?id=${vendor.kycId}`)
+                                  }
+                                  className="text-sm font-medium text-green-600 hover:text-green-800"
+                                >
+                                  Review
+                                </button>
+                              )}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">
+                    <FaFileAlt className="w-12 h-12 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No Applications Found
+                  </h3>
+                  <p className="text-gray-600">
+                    There are no vendor KYC applications to display.
+                  </p>
+                </div>
+              )}
+            </div> */}
+
 
             <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
               <table className="min-w-full text-sm whitespace-nowrap">
+
+                {/* ===== TABLE HEADER ===== */}
                 <thead>
                   <tr className="bg-green-700">
                     <th className="px-6 py-4 text-left font-semibold text-white">
@@ -287,10 +383,12 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
 
+                {/* ===== TABLE BODY ===== */}
                 <tbody className="divide-y divide-gray-100">
-                  {sectionThreeData?.vendorsApproval
-                    .slice(0, 3)
-                    .map((vendor) => (
+
+                  {vendors.length > 0 ? (
+
+                    vendors.slice(0, 3).map((vendor) => (
                       <tr
                         key={vendor._id}
                         className="hover:bg-green-50 transition"
@@ -298,40 +396,64 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 font-medium text-gray-900">
                           {vendor.vendorName}
                         </td>
+
                         <td className="px-6 py-4 text-green-600">
                           {vendor.hasLicense ? "✔" : "✘"}
                         </td>
+
                         <td className="px-6 py-4 text-green-600">
                           {vendor.hasTaxId ? "✔" : "✘"}
                         </td>
+
                         <td className="px-6 py-4">
                           <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                              vendor.status === "Pending"
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${vendor.status === "Pending"
                                 ? "bg-yellow-100 text-yellow-700"
                                 : vendor.status === "Approved"
                                   ? "bg-green-100 text-green-700"
                                   : "bg-red-100 text-red-700"
-                            }`}
+                              }`}
                           >
                             {vendor.status}
                           </span>
                         </td>
+
                         <td className="px-6 py-4 text-right space-x-2">
                           {vendor.status === "Pending" &&
                             hasPermission("Vendors", "Full") && (
-                              <>
-                                <button className="text-sm font-medium text-green-600 hover:text-green-800">
-                                  Approve
-                                </button>
-                                <button className="text-sm font-medium text-red-600 hover:text-red-800">
-                                  Reject
-                                </button>
-                              </>
+                              <button
+                                onClick={() =>
+                                  router.push(`/admin/kyc?id=${vendor.kycId}`)
+                                }
+                                className="text-sm font-medium text-green-600 hover:text-green-800"
+                              >
+                                Review
+                              </button>
                             )}
                         </td>
                       </tr>
-                    ))}
+                    ))
+
+                  ) : (
+
+                    /* ===== EMPTY STATE INSIDE TABLE ===== */
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center text-gray-500">
+                          <FaFileAlt className="w-12 h-12 mb-3 text-gray-300" />
+
+                          <h3 className="text-lg font-medium text-gray-900">
+                            No Applications Found
+                          </h3>
+
+                          <p className="text-gray-600 text-sm mt-1">
+                            There are no vendor KYC applications to display.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+
+                  )}
                 </tbody>
               </table>
             </div>
