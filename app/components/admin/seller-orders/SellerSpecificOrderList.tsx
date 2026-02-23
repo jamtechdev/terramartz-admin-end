@@ -268,7 +268,18 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                                                                         </div>
                                                                         <div className="flex-1 min-w-0">
                                                                             <p className="text-sm font-semibold text-gray-900 truncate">{p.title || 'Unknown Product'}</p>
-                                                                            <p className="text-xs text-gray-500">ID: {p.productId.substring(0, 12)}...</p>
+                                                                            <div className="flex flex-col">
+                                                                                <p className="text-xs text-gray-500">ID: {p.productId.substring(0, 12)}...</p>
+                                                                                {p.refundStatus && p.refundStatus !== 'none' && (
+                                                                                    <span className={`inline-block w-fit mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${p.refundStatus === 'refunded' ? 'bg-red-100 text-red-700 border border-red-200' :
+                                                                                            p.refundStatus === 'requested' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                                                                                                p.refundStatus === 'approved' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                                                                    'bg-gray-100 text-gray-700 border border-gray-200'
+                                                                                        }`}>
+                                                                                        Refund: {p.refundStatus}
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
                                                                         </div>
                                                                         <div className="text-right">
                                                                             <p className="text-sm font-bold text-green-700">${p.price}</p>
