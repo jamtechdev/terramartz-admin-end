@@ -138,6 +138,12 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       requiredModule: "Dashboard",
     },
     {
+      name: "FAQs",
+      href: "/admin/faqs",
+      icon: <RiFileListLine size={20} />,
+      requiredModule: "Support",
+    },
+    {
       name: "Settings",
       href: "/admin/settings",
       icon: <RiSettings3Line size={20} />,
