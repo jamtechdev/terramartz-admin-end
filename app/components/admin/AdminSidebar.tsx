@@ -56,17 +56,23 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       href: "/admin/products",
       icon: <RiShoppingBagLine size={20} />,
       requiredModule: "Products",
-      children: [
-        {
-          name: "All Products",
-          href: "/admin/products",
-        },
-        {
-          name: "Approval Requests",
-          href: "/admin/products/requests",
-        },
-      ],
     },
+    // {
+    //   name: "Products",
+    //   href: "/admin/products",
+    //   icon: <RiShoppingBagLine size={20} />,
+    //   requiredModule: "Products",
+    //   children: [
+    //     {
+    //       name: "All Products",
+    //       href: "/admin/products",
+    //     },
+    //     {
+    //       name: "Approval Requests",
+    //       href: "/admin/products/requests",
+    //     },
+    //   ],
+    // },
     {
       name: "Staffs",
       href: "/admin/staffs",
@@ -108,6 +114,12 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       requiredModule: "Payments",
     },
     {
+      name: "Seller Orders",
+      href: "/admin/seller-orders",
+      icon: <RiFileListLine size={20} />,
+      requiredModule: "Payments", // Grouping under payments for now
+    },
+    {
       name: "Tickets",
       href: "/admin/tickets",
       icon: <RiTicketLine size={20} />,
@@ -115,7 +127,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
     },
     // {
     //   name: "Reports",
-    //   href: "/admin/reports",
+    //   href: "/admin/reports",  
     //   icon: <RiBarChartLine size={20} />,
     //   requiredModule: "Dashboard",
     // },
@@ -124,6 +136,12 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       href: "/admin/logs",
       icon: <RiFileListLine size={20} />,
       requiredModule: "Dashboard",
+    },
+    {
+      name: "FAQs",
+      href: "/admin/faqs",
+      icon: <RiFileListLine size={20} />,
+      requiredModule: "Support",
     },
     {
       name: "Settings",
