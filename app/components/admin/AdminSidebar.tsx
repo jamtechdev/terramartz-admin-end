@@ -174,7 +174,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
 
   const SidebarContent = (
     <aside
-      className={`flex flex-col bg-[linear-gradient(rgb(0_130_54),rgb(0_130_54_/_70%)),url('/images/inner-bg.png')] bg-cover bg-center bg-no-repeat text-white p-4
+      className={`flex flex-col bg-[linear-gradient(rgb(0_130_54),rgb(0_130_54/70%)),url('/images/inner-bg.png')] bg-cover bg-center bg-no-repeat text-white p-4
       ${collapsed ? "w-20" : "w-72"} h-full transition-all`}
     >
       {/* Header */}
