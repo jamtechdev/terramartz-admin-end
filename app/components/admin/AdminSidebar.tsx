@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { notificationService } from "@/app/services/notification.service";
 import {
   RiHomeLine,
   RiUserLine,
@@ -32,11 +33,33 @@ type Props = {
 };
 
 export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
-  const { logout, user, hasPermission } = useAuth();
+  const { logout, user, hasPermission, token } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [counts, setCounts] = useState<{
+    purchaseCount: number;
+    kycCount: number;
+    contactInquiryCount: number;
+    totalCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (token) {
+        const response = await notificationService.getNotificationCounts(token);
+        if (response.success) {
+          setCounts(response.data);
+        }
+      }
+    };
+
+    fetchCounts();
+    // Refresh counts every 1 minute
+    const interval = setInterval(fetchCounts, 1 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [token]);
 
   const menuItems = [
     {
@@ -106,6 +129,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       href: "/admin/kyc",
       icon: <RiShieldCheckLine size={20} />,
       requiredModule: "Users",
+      count: counts?.kycCount,
     },
     {
       name: "Transactions",
@@ -118,16 +142,18 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       href: "/admin/seller-orders",
       icon: <RiFileListLine size={20} />,
       requiredModule: "Payments", // Grouping under payments for now
+      count: counts?.purchaseCount,
     },
     {
       name: "Tickets",
       href: "/admin/tickets",
       icon: <RiTicketLine size={20} />,
       requiredModule: "Support",
+      count: counts?.contactInquiryCount,
     },
     // {
     //   name: "Reports",
-    //   href: "/admin/reports",  
+    //   href: "/admin/reports",
     //   icon: <RiBarChartLine size={20} />,
     //   requiredModule: "Dashboard",
     // },
@@ -267,7 +293,16 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
                   ${active ? "bg-green-900 text-white" : "text-green-100 hover:bg-green-900"}`}
                 >
                   {item.icon}
-                  {!collapsed && <span>{item.name}</span>}
+                  {!collapsed && (
+                    <div className="flex items-center justify-between flex-1">
+                      <span>{item.name}</span>
+                      {(item as any).count > 0 && (
+                        <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                          {(item as any).count}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </Link>
               )}
 

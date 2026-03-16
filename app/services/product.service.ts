@@ -90,11 +90,14 @@ export const productService = {
   exportProductsCSV,
 };
 
-async function getProducts(filters: ProductFilters = {}, token?: string): Promise<ProductsResponse> {
+async function getProducts(
+  filters: ProductFilters = {},
+  token?: string,
+): Promise<ProductsResponse> {
   const params = new URLSearchParams();
-  
+
   Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       params.append(key, value.toString());
     }
   });
@@ -106,13 +109,16 @@ async function getProducts(filters: ProductFilters = {}, token?: string): Promis
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-    }
+    },
   );
 
   return response.data;
 }
 
-async function getProductById(productId: string, token?: string): Promise<{ status: string; data: Product }> {
+async function getProductById(
+  productId: string,
+  token?: string,
+): Promise<{ status: string; data: Product }> {
   const response = await axios.get(
     `${BASE_URL}/api/admin/products/${productId}`,
     {
@@ -120,22 +126,19 @@ async function getProductById(productId: string, token?: string): Promise<{ stat
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-    }
+    },
   );
 
   return response.data;
 }
 
 async function getRequestedProducts(token?: string): Promise<ProductsResponse> {
-  const response = await axios.get(
-    `${BASE_URL}/api/admin/products/requested`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-    }
-  );
+  const response = await axios.get(`${BASE_URL}/api/admin/products/requested`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+  });
 
   return response.data;
 }
@@ -149,7 +152,7 @@ async function approveProduct(productId: string, token?: string) {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-    }
+    },
   );
 
   return response.data;
@@ -164,13 +167,17 @@ async function rejectProduct(productId: string, token?: string) {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-    }
+    },
   );
 
   return response.data;
 }
 
-async function toggleProductApproval(productId: string, approved: boolean, token?: string) {
+async function toggleProductApproval(
+  productId: string,
+  approved: boolean,
+  token?: string,
+) {
   const response = await axios.patch(
     `${BASE_URL}/api/admin/products/${productId}/approval`,
     { approved },
@@ -179,13 +186,17 @@ async function toggleProductApproval(productId: string, approved: boolean, token
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-    }
+    },
   );
 
   return response.data;
 }
 
-async function updateProductStatus(productId: string, status: string, token?: string) {
+async function updateProductStatus(
+  productId: string,
+  status: string,
+  token?: string,
+) {
   const response = await axios.patch(
     `${BASE_URL}/api/admin/products/${productId}/status`,
     { status },
@@ -194,7 +205,7 @@ async function updateProductStatus(productId: string, status: string, token?: st
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-    }
+    },
   );
 
   return response.data;
@@ -208,8 +219,8 @@ async function exportProductsCSV(token?: string) {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-      responseType: 'blob',
-    }
+      responseType: "blob",
+    },
   );
 
   return response.data;
