@@ -164,6 +164,12 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
       requiredModule: "Dashboard",
     },
     {
+      name: "Promo Codes",
+      href: "/admin/promo-codes",
+      icon: <RiPriceTagLine size={20} />,
+      requiredModule: "Promo Codes",
+    },
+    {
       name: "FAQs",
       href: "/admin/faqs",
       icon: <RiFileListLine size={20} />,
