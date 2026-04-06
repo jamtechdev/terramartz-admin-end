@@ -345,32 +345,23 @@ export default function TicketPage() {
   };
 
   const handleAssignTicket = async (newAdminId: string | null) => {
-    console.log('handleAssignTicket called with:', newAdminId); // Debug log
-    console.log('Selected inquiry:', selectedInquiry); // Debug log
-    
     // Extract ticket ID properly handling potential nested structure
     // @ts-ignore - Handling dynamic structure
     const ticketId = selectedInquiry?._id || selectedInquiry?.ticket?._id;
     
     if (!ticketId) {
-      console.log('No ticket ID found'); // Debug log
+      toast.error('No ticket selected');
       return;
     }
     
     setIsProcessing(true);
     try {
-      console.log('Calling assignContactInquiry with:', ticketId, newAdminId); // Debug log
       const res = await assignContactInquiry(ticketId, newAdminId);
-      console.log('Assign API response:', res); // Debug log
-      console.log('Response data:', res.data); // Debug log
       
       if (res.status === 'success' && res.data) {
         // Handle response data structure which might be nested under 'ticket'
         // @ts-ignore - Handling dynamic structure
         const updatedInquiryData = res.data.ticket || res.data;
-        
-        console.log('Updating selected inquiry with:', updatedInquiryData); // Debug log
-        console.log('Assigned admin in response:', updatedInquiryData?.assignedAdmin); // Debug log
 
         // Update the selected inquiry with the full response data
         setSelectedInquiry(updatedInquiryData);
@@ -388,17 +379,14 @@ export default function TicketPage() {
                 } 
               : inq
           );
-          console.log('Updated inquiries list:', updated); // Debug log
           return updated;
         });
         
         toast.success(newAdminId ? 'Ticket assigned successfully' : 'Ticket unassigned successfully');
       } else {
-        console.log('Assign failed:', res.error); // Debug log
         toast.error(res.error || 'Failed to assign ticket');
       }
     } catch (err: any) {
-      console.log('Assign error:', err); // Debug log
       toast.error(err.message || 'Failed to assign ticket');
     } finally {
       setIsProcessing(false);

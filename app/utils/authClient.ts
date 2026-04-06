@@ -8,15 +8,12 @@ export async function getAuthTokenClient(): Promise<string | null> {
     if (typeof window !== 'undefined') {
       // Try both possible localStorage keys for backward compatibility
       let token = localStorage.getItem('authToken');
-      console.log('authToken from localStorage:', !!token); // Debug log
 
       if (!token) {
         token = localStorage.getItem('token');
-        console.log('token from localStorage:', !!token); // Debug log
       }
 
       if (token) {
-        console.log('Returning token from localStorage'); // Debug log
         return token;
       }
     }
@@ -24,19 +21,15 @@ export async function getAuthTokenClient(): Promise<string | null> {
     // If localStorage doesn't have it, try to get from cookie
     if (typeof document !== 'undefined') {
       const cookies = document.cookie.split(';');
-      console.log('Cookies found:', cookies.length); // Debug log
 
       const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('token='));
-      console.log('Token cookie found:', !!tokenCookie); // Debug log
 
       if (tokenCookie) {
         const tokenValue = tokenCookie.split('=')[1];
-        console.log('Returning token from cookie'); // Debug log
         return tokenValue;
       }
     }
 
-    console.log('No token found in localStorage or cookies'); // Debug log
     return null;
   } catch (err) {
     console.error('Failed to get auth token:', err);
@@ -109,14 +102,12 @@ export function isTokenValid(token: string): boolean {
     if (decoded.exp) {
       const currentTime = Math.floor(Date.now() / 1000);
       if (decoded.exp < currentTime) {
-        console.log('Token has expired');
         return false;
       }
     }
 
     // Check if token has required fields
     if (!decoded.id) {
-      console.log('Token missing user ID');
       return false;
     }
 
@@ -132,12 +123,10 @@ export async function validateAndGetToken(): Promise<string | null> {
   const token = await getAuthTokenClient();
 
   if (!token) {
-    console.log('No token found');
     return null;
   }
 
   if (!isTokenValid(token)) {
-    console.log('Token is invalid or expired, cleaning up...');
     removeAuthTokenClient();
     return null;
   }

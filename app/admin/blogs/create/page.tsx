@@ -104,23 +104,16 @@ export default function CreateBlogPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted, validating...');
-    console.log('Form data:', formData);
     
     const isValid = validateForm();
-    console.log('Form validation result:', isValid);
-    console.log('Validation errors:', errors);
     
     if (!isValid) {
-      console.log('Form validation failed, not submitting');
       return;
     }
 
     try {
       setLoading(true);
-      console.log('Submitting blog data:', formData);
-      const result = await blogService.createBlog(formData, token || undefined);
-      console.log('Blog created successfully:', result);
+      await blogService.createBlog(formData, token || undefined);
       router.push("/admin/blogs");
     } catch (error) {
       console.error("Error creating blog:", error);

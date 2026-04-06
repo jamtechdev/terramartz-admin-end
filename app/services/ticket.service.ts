@@ -241,7 +241,6 @@ export async function assignContactInquiry(ticketId: string, newAdminId: string 
     });
 
     const data = await res.json();
-    console.log('Assign API raw response:', JSON.stringify(data, null, 2)); // Debug log
 
     if (!res.ok) {
       if (res.status === 401) {
@@ -252,10 +251,9 @@ export async function assignContactInquiry(ticketId: string, newAdminId: string 
 
     // Handle the response structure properly - the inquiry is likely in data.data or data.inquiry
     const responseData = data.data?.inquiry || data.data || data.ticket || data;
-    console.log('Assign API processed data:', responseData); // Debug log
     return { status: 'success', data: responseData };
   } catch (err: any) {
-    console.log('Assign API error:', err); // Debug log
+    console.error('assignContactInquiry:', err);
     return { status: 'error', error: err.message || 'Network error' };
   }
 }

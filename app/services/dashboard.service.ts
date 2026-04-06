@@ -25,8 +25,6 @@ async function getSectionOne(token: string) {
       },
     );
 
-    console.log(response, "response==>");
-
     return {
       success: true as const,
       data: response.data,

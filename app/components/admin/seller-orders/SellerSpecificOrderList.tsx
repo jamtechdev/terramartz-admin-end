@@ -274,10 +274,16 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                                                                                     <span className={`inline-block w-fit mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${p.refundStatus === 'refunded' ? 'bg-red-100 text-red-700 border border-red-200' :
                                                                                             p.refundStatus === 'requested' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
                                                                                                 p.refundStatus === 'approved' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                                                                    p.refundStatus === 'rejected' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
                                                                                                     'bg-gray-100 text-gray-700 border border-gray-200'
                                                                                         }`}>
                                                                                         Refund: {p.refundStatus}
                                                                                     </span>
+                                                                                )}
+                                                                                {Number(p.refundAmount) > 0 && (
+                                                                                    <p className="text-[10px] text-indigo-700 mt-1 font-medium">
+                                                                                        Settlement refund: ${Number(p.refundAmount).toFixed(2)}
+                                                                                    </p>
                                                                                 )}
                                                                             </div>
                                                                         </div>

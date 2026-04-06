@@ -265,9 +265,8 @@ export default function ApplicationDetail({
         <div className="lg:col-span-2">
           <DocumentGallery 
             application={application}
-            onDocumentAction={(docId, action) => {
-              console.log('Document action:', docId, action);
-              // Handle document-specific actions
+            onDocumentAction={() => {
+              // Handle document-specific actions when wired to API
             }}
           />
         </div>

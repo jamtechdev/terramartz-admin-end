@@ -60,7 +60,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (storedToken) {
       setToken(storedToken);
-      console.log("✅ Token set in state");
     }
 
     if (storedUser) {
@@ -74,7 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     setLoading(false);
-    console.log("🏁 AuthContext: Loading complete");
   }, []);
 
   // =========================
@@ -116,11 +114,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return result;
   };
-
-  console.log("🔄 AuthContext render:", {
-    token,
-    user,
-  });
 
   return (
     <AuthContext.Provider
