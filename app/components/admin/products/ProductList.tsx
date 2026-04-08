@@ -1,26 +1,70 @@
 "use client";
+
 import { productService, Product, ProductFilters } from "@/app/services/product.service";
-import { useEffect, useState } from "react";
-import { format } from "date-fns";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import {
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Filter,
+  Download,
+  RotateCcw,
+  Eye,
+  Check,
+  X,
+} from "lucide-react";
+
+function lifecycleBadgeClass(status: string) {
+  const s = status?.toLowerCase() || "";
+  const map: Record<string, string> = {
+    active: "bg-emerald-50 text-emerald-800 ring-emerald-600/20",
+    inactive: "bg-rose-50 text-rose-800 ring-rose-600/20",
+    draft: "bg-amber-50 text-amber-900 ring-amber-600/20",
+    pending: "bg-sky-50 text-sky-800 ring-sky-600/20",
+    rejected: "bg-red-50 text-red-800 ring-red-600/20",
+    out_of_stock: "bg-orange-50 text-orange-900 ring-orange-600/20",
+    archived: "bg-slate-100 text-slate-700 ring-slate-500/20",
+  };
+  return map[s] || "bg-slate-100 text-slate-700 ring-slate-500/20";
+}
+
+function formatStatus(status: string) {
+  return status?.replace(/_/g, " ") || "—";
+}
 
 export default function ProductList() {
   const { token } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
-    results: 0
+    results: 0,
   });
 
   const [filters, setFilters] = useState<ProductFilters>({
     page: 1,
-    limit: 10
+    limit: 10,
   });
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (filters.search) n++;
+    if (filters.status) n++;
+    if (filters.productType) n++;
+    if (filters.organic !== undefined && filters.organic !== null) n++;
+    if (filters.adminApproved !== undefined && filters.adminApproved !== null) n++;
+    if (filters.featured !== undefined && filters.featured !== null) n++;
+    if (filters.minPrice != null) n++;
+    if (filters.maxPrice != null) n++;
+    return n;
+  }, [filters]);
 
   const fetchProducts = async () => {
     if (!token) return;
@@ -33,10 +77,11 @@ export default function ProductList() {
         page: response.page,
         limit: response.limit,
         total: response.total,
-        results: response.results
+        results: response.results,
       });
     } catch (error) {
       console.error("Error fetching products:", error);
+      toast.error("Could not load products. Try again.");
     } finally {
       setLoading(false);
     }
@@ -46,24 +91,20 @@ export default function ProductList() {
     fetchProducts();
   }, [filters, token]);
 
-  const handleFilterChange = (key: keyof ProductFilters, value: any) => {
-    setFilters(prev => ({
+  const handleFilterChange = (key: keyof ProductFilters, value: unknown) => {
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: key !== 'page' ? 1 : value // Reset to page 1 when changing filters
+      page: key !== "page" ? 1 : (value as number),
     }));
   };
 
   const handlePageChange = (newPage: number) => {
-    handleFilterChange('page', newPage);
+    handleFilterChange("page", newPage);
   };
 
   const getImageUrl = (imageName: string) => {
-    // If the image is already a full URL (starts with http), return as is
-    if (imageName.startsWith('http')) {
-      return imageName;
-    }
-    // Otherwise, construct the URL with the S3 direct URL from env
+    if (imageName.startsWith("http")) return imageName;
     return `${process.env.NEXT_PUBLIC_S3_DIRECT_URL}/products/${imageName}`;
   };
 
@@ -73,321 +114,460 @@ export default function ProductList() {
     try {
       const blob = await productService.exportProductsCSV(token);
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = 'products.csv';
+      link.download = "products.csv";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      toast.success("Export started — check your downloads.");
     } catch (error) {
       console.error("Error exporting CSV:", error);
+      toast.error("Export failed.");
     }
   };
 
-  const handleToggleApproval = async (productId: string, currentApproved: boolean) => {
+  const handleToggleApproval = async (
+    productId: string,
+    currentApproved: boolean,
+  ) => {
     if (!token) return;
 
     try {
-      await productService.toggleProductApproval(productId, !currentApproved, token);
+      await productService.toggleProductApproval(
+        productId,
+        !currentApproved,
+        token,
+      );
 
-      setProducts(prevProducts =>
-        prevProducts.map(product =>
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
           product._id === productId
             ? { ...product, adminApproved: !currentApproved }
-            : product
-        )
+            : product,
+        ),
+      );
+      toast.success(
+        !currentApproved
+          ? "Product approved for catalog"
+          : "Approval removed",
       );
     } catch (error) {
       console.error("Error toggling approval:", error);
+      toast.error("Could not update approval.");
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(pagination.total / pagination.limit));
+
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        {/* <h1 className="text-2xl font-bold text-gray-900 mb-4">Products Management</h1> */}
+    <div className="px-4 sm:px-6 lg:px-8 pb-12 max-w-[1680px] mx-auto">
+      {/* Primary toolbar */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-5">
+        <div className="relative w-full lg:max-w-md">
+          <Search
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+            aria-hidden
+          />
+          <input
+            type="search"
+            placeholder="Search by title, description…"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+            value={filters.search || ""}
+            onChange={(e) => handleFilterChange("search", e.target.value)}
+          />
+        </div>
 
-        {/* Filters */}
-        <div className="bg-white p-4 rounded-lg shadow mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Search */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search Products</label>
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.search || ''}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-              />
-            </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((o) => !o)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+            {filtersOpen ? (
+              <ChevronUp className="w-4 h-4 text-slate-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-slate-500" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilters({ page: 1, limit: 10 })}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </button>
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium shadow-sm hover:bg-emerald-700"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        </div>
+      </div>
 
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+      {/* Collapsible filters */}
+      {filtersOpen && (
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 sm:p-5 mb-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">
+            Refine results
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Listing status
+              </span>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.status || ''}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
+                value={filters.status || ""}
+                onChange={(e) => handleFilterChange("status", e.target.value)}
               >
-                <option value="">All Status</option>
+                <option value="">All</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="draft">Draft</option>
                 <option value="pending">Pending</option>
                 <option value="rejected">Rejected</option>
-                <option value="out_of_stock">Out of Stock</option>
+                <option value="out_of_stock">Out of stock</option>
                 <option value="archived">Archived</option>
               </select>
-            </div>
-
-            {/* Product Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Product type
+              </span>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.productType || ''}
-                onChange={(e) => handleFilterChange('productType', e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
+                value={filters.productType || ""}
+                onChange={(e) =>
+                  handleFilterChange("productType", e.target.value)
+                }
               >
-                <option value="">All Types</option>
+                <option value="">All</option>
                 <option value="regular">Regular</option>
                 <option value="organic">Organic</option>
                 <option value="premium">Premium</option>
               </select>
-            </div>
-
-            {/* Organic */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Organic Status</label>
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Organic
+              </span>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.organic?.toString() || ''}
-                onChange={(e) => handleFilterChange('organic', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
+                value={filters.organic?.toString() || ""}
+                onChange={(e) =>
+                  handleFilterChange(
+                    "organic",
+                    e.target.value === "true"
+                      ? true
+                      : e.target.value === "false"
+                        ? false
+                        : undefined,
+                  )
+                }
               >
-                <option value="">All Products</option>
-                <option value="true">Organic Only</option>
-                <option value="false">Non-Organic</option>
+                <option value="">Any</option>
+                <option value="true">Organic only</option>
+                <option value="false">Non-organic</option>
               </select>
-            </div>
-
-            {/* Admin Approved */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Approval Status</label>
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Catalog approval
+              </span>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.adminApproved?.toString() || ''}
-                onChange={(e) => handleFilterChange('adminApproved', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
+                value={filters.adminApproved?.toString() || ""}
+                onChange={(e) =>
+                  handleFilterChange(
+                    "adminApproved",
+                    e.target.value === "true"
+                      ? true
+                      : e.target.value === "false"
+                        ? false
+                        : undefined,
+                  )
+                }
               >
-                <option value="">All Products</option>
-                <option value="true">Approved Only</option>
-                <option value="false">Not Approved</option>
+                <option value="">All</option>
+                <option value="true">Approved</option>
+                <option value="false">Not approved</option>
               </select>
-            </div>
-
-            {/* Featured */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Featured Status</label>
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Featured
+              </span>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.featured?.toString() || ''}
-                onChange={(e) => handleFilterChange('featured', e.target.value === 'true' ? true : e.target.value === 'false' ? false : undefined)}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
+                value={filters.featured?.toString() || ""}
+                onChange={(e) =>
+                  handleFilterChange(
+                    "featured",
+                    e.target.value === "true"
+                      ? true
+                      : e.target.value === "false"
+                        ? false
+                        : undefined,
+                  )
+                }
               >
-                <option value="">All Products</option>
-                <option value="true">Featured Only</option>
-                <option value="false">Not Featured</option>
+                <option value="">Any</option>
+                <option value="true">Featured</option>
+                <option value="false">Not featured</option>
               </select>
-            </div>
-
-            {/* Min Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Min Price</label>
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Min price ($)
+              </span>
               <input
                 type="number"
-                placeholder="Min Price"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.minPrice || ''}
-                onChange={(e) => handleFilterChange('minPrice', e.target.value ? Number(e.target.value) : undefined)}
+                min={0}
+                placeholder="0"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
+                value={filters.minPrice ?? ""}
+                onChange={(e) =>
+                  handleFilterChange(
+                    "minPrice",
+                    e.target.value ? Number(e.target.value) : undefined,
+                  )
+                }
               />
-            </div>
-
-            {/* Max Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Max Price</label>
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Max price ($)
+              </span>
               <input
                 type="number"
-                placeholder="Max Price"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.maxPrice || ''}
-                onChange={(e) => handleFilterChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
+                min={0}
+                placeholder="—"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
+                value={filters.maxPrice ?? ""}
+                onChange={(e) =>
+                  handleFilterChange(
+                    "maxPrice",
+                    e.target.value ? Number(e.target.value) : undefined,
+                  )
+                }
               />
-            </div>
-
-            {/* Items per page */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Items per page</label>
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Per page
+              </span>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
                 value={filters.limit || 10}
-                onChange={(e) => handleFilterChange('limit', Number(e.target.value))}
+                onChange={(e) =>
+                  handleFilterChange("limit", Number(e.target.value))
+                }
               >
-                <option value={10}>10 per page</option>
-                <option value={25}>25 per page</option>
-                <option value={50}>50 per page</option>
-                <option value={100}>100 per page</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
               </select>
-            </div>
+            </label>
           </div>
         </div>
+      )}
 
-        {/* Results Info */}
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-gray-600">
-            Showing {pagination.results} of {pagination.total} products
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilters({ page: 1, limit: 10 })}
-              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-            >
-              Clear Filters
-            </button>
-            <button
-              onClick={handleExportCSV}
-              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-            >
-              Export CSV
-            </button>
-          </div>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5 text-sm text-slate-600">
+        <p>
+          <span className="font-semibold text-slate-900">
+            {pagination.results}
+          </span>
+          <span className="text-slate-500"> of </span>
+          <span className="font-semibold text-slate-900">
+            {pagination.total}
+          </span>
+          <span className="text-slate-500"> products</span>
+        </p>
+        <p className="text-slate-500">
+          Page {pagination.page} / {totalPages}
+        </p>
       </div>
 
-      {/* Products Grid */}
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        <div className="flex flex-col items-center justify-center py-24 gap-3">
+          <div className="h-10 w-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-slate-500">Loading products…</p>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-16 text-center text-slate-500">
+          No products match these filters.
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                {/* Product Image */}
-                <div className="h-48 bg-gray-200 relative">
-                  {product.productImages.length > 0 ? (
-                    <img
-                      src={getImageUrl(product.productImages[0])}
-                      alt={product.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      No Image
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+            {products.map((product) => {
+              const orig = Number(product.originalPrice);
+              const price = Number(product.price);
+              const showCompare =
+                orig > price && orig > 0;
+
+              return (
+                <article
+                  key={product._id}
+                  className="group flex flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md hover:border-slate-300/90"
+                >
+                  <div className="relative h-44 bg-slate-100 shrink-0">
+                    {product.productImages?.length > 0 ? (
+                      <img
+                        src={getImageUrl(product.productImages[0])}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+                        No image
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 right-2 flex justify-between items-start gap-2">
+                      <span
+                        className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-lg shadow-sm ${product.adminApproved ? "bg-white/95 text-emerald-800 ring-1 ring-emerald-600/20" : "bg-amber-50 text-amber-900 ring-1 ring-amber-600/25"}`}
+                      >
+                        {product.adminApproved
+                          ? "Catalog OK"
+                          : "Needs approval"}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-lg ring-1 ring-inset shrink-0 ${lifecycleBadgeClass(product.status)}`}
+                      >
+                        {formatStatus(product.status)}
+                      </span>
                     </div>
-                  )}
-
-                  {/* Badges */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    {product.adminApproved && (
-                      <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded">Approved</span>
-                    )}
-                    {product.organic && (
-                      <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">Organic</span>
-                    )}
-                    {product.featured && (
-                      <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded">Featured</span>
-                    )}
+                    <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+                      {product.organic && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-600 text-white shadow-sm">
+                          Organic
+                        </span>
+                      )}
+                      {product.featured && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-500 text-white shadow-sm">
+                          Featured
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Status */}
-
-                  {/* Status */}
-                  <div className="absolute top-2 right-2">
-                    <span className={`text-xs px-2 py-1 rounded ${product.status === 'active' ? 'bg-green-100 text-green-800' :
-                        product.status === 'inactive' ? 'bg-red-100 text-red-800' :
-                          product.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
-                            product.status === 'pending' ? 'bg-blue-100 text-blue-800' :
-                              product.status === 'rejected' ? 'bg-red-200 text-red-900' :
-                                product.status === 'out_of_stock' ? 'bg-orange-100 text-orange-800' :
-                                  product.status === 'archived' ? 'bg-gray-100 text-gray-800' :
-                                    'bg-gray-100 text-gray-800'
-                      }`}>
-                      {product.status.replace('_', ' ')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Product Info */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg mb-2 truncate">{product.title}</h3>
-                  <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
-
-                  {/* Category */}
-                  <p className="text-sm text-gray-500 mb-2">Category: {product.category?.name || 'N/A'}</p>
-
-                  {/* Price */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg font-bold text-green-600">${product.price}</span>
-                    {product.originalPrice !== product.price && (
-                      <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
-                    )}
-                  </div>
-
-                  {/* Stock */}
-                  <p className="text-sm text-gray-600 mb-2">Stock: {product.stockQuantity}</p>
-
-                  {/* Seller */}
-                  <p className="text-sm text-gray-500 mb-3">
-                    Seller: {product.createdBy?.email || 'N/A'}
-                  </p>
-
-
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => router.push(`/admin/products/${product._id}`)}
-                      className="flex-1 bg-blue-500 text-white py-2 px-3 rounded text-sm hover:bg-blue-600"
+                  <div className="flex flex-col flex-1 p-4 pt-3">
+                    <h3 className="font-semibold text-slate-900 leading-snug line-clamp-2 min-h-[2.5rem]">
+                      {product.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                      {product.description || "—"}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+                      <span>
+                        <span className="text-slate-400">Category · </span>
+                        {product.category?.name || "—"}
+                      </span>
+                      <span>
+                        <span className="text-slate-400">Stock · </span>
+                        {product.stockQuantity}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+                      <span className="text-lg font-bold text-emerald-700">
+                        ${price.toFixed(2)}
+                      </span>
+                      {showCompare && (
+                        <span className="text-sm text-slate-400 line-through">
+                          ${orig.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    <p
+                      className="text-xs text-slate-400 mt-1 truncate"
+                      title={product.createdBy?.email}
                     >
-                      View
-                    </button>
-                    <button
-                      onClick={() => handleToggleApproval(product._id, product.adminApproved || false)}
-                      className={`flex-1 py-2 px-3 rounded text-sm ${product.adminApproved
-                          ? 'bg-red-500 text-white hover:bg-red-600'
-                          : 'bg-green-500 text-white hover:bg-green-600'
+                      Seller · {product.createdBy?.email || "—"}
+                    </p>
+
+                    <div className="mt-auto pt-4 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          router.push(`/admin/products/${product._id}`)
+                        }
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleToggleApproval(
+                            product._id,
+                            product.adminApproved || false,
+                          )
+                        }
+                        className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-sm font-medium text-white ${
+                          product.adminApproved
+                            ? "bg-rose-600 hover:bg-rose-700"
+                            : "bg-emerald-600 hover:bg-emerald-700"
                         }`}
-                    >
-                      {product.adminApproved ? 'Disapprove' : 'Approve'}
-                    </button>
+                      >
+                        {product.adminApproved ? (
+                          <>
+                            <X className="w-4 h-4" />
+                            Revoke
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-4 h-4" />
+                            Approve
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                </article>
+              );
+            })}
           </div>
 
-          {/* Pagination */}
           {pagination.total > pagination.limit && (
-            <div className="flex justify-center items-center mt-8 gap-2">
+            <nav
+              className="flex justify-center items-center gap-2 mt-10"
+              aria-label="Pagination"
+            >
               <button
+                type="button"
                 onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-                className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+                disabled={pagination.page <= 1}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none"
               >
                 Previous
               </button>
-
-              <span className="px-4 py-2 text-gray-700">
-                Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
+              <span className="px-4 py-2 text-sm text-slate-600 tabular-nums">
+                {pagination.page} / {totalPages}
               </span>
-
               <button
+                type="button"
                 onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-                className="px-3 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+                disabled={pagination.page >= totalPages}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none"
               >
                 Next
               </button>
-            </div>
+            </nav>
           )}
         </>
       )}

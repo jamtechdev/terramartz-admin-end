@@ -76,7 +76,7 @@ export default function UserList() {
       name: user.name || "N/A",
       email: user.email || "N/A",
       phoneNumber: user.phoneNumber || "N/A",
-      isActive: user.isActive !== undefined ? user.isActive : true,
+      isActive: user.isActive === true,
       role:
         user.role === "user"
           ? "Buyer"
@@ -136,6 +136,9 @@ export default function UserList() {
       alert(`Error: ${res.message}`);
     }
   };
+
+  const getNextAccessAction = (isActive: boolean) =>
+    isActive ? "Disable Login Access" : "Enable Login Access";
 
   const handleUpdateUser = async (updateData: any) => {
     if (!token || !selectedUser) return;
@@ -218,9 +221,9 @@ export default function UserList() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-4 py-2.5 bg-white border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm transition-colors"
         >
-          <option value="">All Status</option>
-          <option value="online">Active</option>
-          <option value="offline">Inactive</option>
+          <option value="">All Access States</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
         </select>
 
         <button
@@ -248,7 +251,9 @@ export default function UserList() {
               <th className="px-6 py-4 text-left font-semibold">Name</th>
               <th className="px-6 py-4 text-left font-semibold">Email</th>
               <th className="px-6 py-4 text-left font-semibold">Phone</th>
-              <th className="px-6 py-4 text-left font-semibold">Status</th>
+              <th className="px-6 py-4 text-left font-semibold">
+                Access Status
+              </th>
               <th className="px-6 py-4 text-left font-semibold">Role</th>
               <th className="px-6 py-4 text-left font-semibold">Date</th>
               <th className="px-6 py-4 text-left font-semibold">Actions</th>
@@ -333,8 +338,13 @@ export default function UserList() {
                       <button
                         onClick={() => handleToggleStatus(user._id)}
                         className="text-amber-600 hover:text-amber-700 text-xs font-semibold hover:underline transition-colors"
+                        title={
+                          user.isActive
+                            ? "Disable Login Access (block sign-in)"
+                            : "Enable Login Access (allow sign-in)"
+                        }
                       >
-                        {user.isActive ? "Disable" : "Enable"}
+                        {getNextAccessAction(user.isActive)}
                       </button>
                       {/* <button
                         onClick={() => handleDelete(user._id)}

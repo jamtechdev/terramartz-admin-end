@@ -22,6 +22,19 @@ import {
   StatCard,
 } from "../types/admin-dashboard";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const VendorPerformanceMap = dynamic(
+  () => import("../components/dashboard/VendorPerformanceMap"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[400px] w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-600">
+        Loading map…
+      </div>
+    ),
+  },
+);
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<StatCard[]>([]);
@@ -469,15 +482,7 @@ export default function AdminDashboard() {
               Vendor Performance Map
             </h2>
 
-            <div className="w-full h-[400px] rounded-xl overflow-hidden border border-white/10">
-              <iframe
-                title="Dummy Google Map"
-                src="https://maps.google.com/maps?q=New%20Delhi&t=&z=12&ie=UTF8&iwloc=&output=embed"
-                className="w-full h-full"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
+            <VendorPerformanceMap />
           </DashboardCard>
         </div>
       )}
