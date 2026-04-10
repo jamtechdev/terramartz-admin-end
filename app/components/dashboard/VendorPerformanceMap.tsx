@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Circle,
   MapContainer,
@@ -27,17 +27,77 @@ const farmIcon = new L.Icon({
   popupAnchor: [0, -30],
 });
 
+const WORLD_BOUNDS: L.LatLngBoundsExpression = [
+  [-85, -180],
+  [85, 180],
+];
+
+function roughDistanceKm(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+) {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const x =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((a.lat * Math.PI) / 180) *
+      Math.cos((b.lat * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(x)));
+}
+
+function buildFitPoints(
+  user: { lat: number; lng: number },
+  farms: { lat: number; lng: number }[],
+) {
+  if (farms.length === 0) return [user];
+  const all = [user, ...farms];
+  const lats = all.map((p) => p.lat);
+  const lngs = all.map((p) => p.lng);
+  const latSpan = Math.max(...lats) - Math.min(...lats);
+  const lngSpan = Math.max(...lngs) - Math.min(...lngs);
+  if (latSpan <= 24 && lngSpan <= 50) {
+    return all;
+  }
+  const nearest = [...farms]
+    .sort((a, b) => roughDistanceKm(user, a) - roughDistanceKm(user, b))
+    .slice(0, 28);
+  return [user, ...nearest];
+}
+
 function RecenterAndFitBounds({
-  points,
+  user,
+  farms,
+  fitKey,
 }: {
-  points: { lat: number; lng: number }[];
+  user: { lat: number; lng: number };
+  farms: { lat: number; lng: number }[];
+  fitKey: string;
 }) {
   const map = useMap();
   useEffect(() => {
-    if (!points || points.length === 0) return;
-    const group = L.featureGroup(points.map((p) => L.marker([p.lat, p.lng])));
-    map.fitBounds(group.getBounds().pad(0.5));
-  }, [points, map]);
+    if (!farms.length) return;
+    const pts = buildFitPoints(user, farms);
+    const group = L.featureGroup(pts.map((p) => L.marker([p.lat, p.lng])));
+    const b = group.getBounds();
+    if (!b.isValid()) return;
+
+    const ne = b.getNorthEast();
+    const sw = b.getSouthWest();
+    const latSpan = ne.lat - sw.lat;
+    const lngSpan = ne.lng - sw.lng;
+    if (latSpan < 0.015 && lngSpan < 0.015) {
+      map.setView(b.getCenter(), 14, { animate: false });
+      return;
+    }
+
+    map.fitBounds(b, {
+      padding: [36, 36],
+      maxZoom: 14,
+      animate: false,
+    });
+  }, [map, user.lat, user.lng, fitKey]);
   return null;
 }
 
@@ -174,10 +234,19 @@ export default function VendorPerformanceMap() {
         ).id
       : null;
 
-  const allPoints = [
-    userLocation,
-    ...farmsWithDistance.map((f) => ({ lat: f.lat, lng: f.lng })),
-  ];
+  const farmCoordsForFit = useMemo(
+    () => farms.map((f) => ({ lat: f.lat, lng: f.lng })),
+    [farms],
+  );
+  const farmFitKey = useMemo(
+    () =>
+      farmCoordsForFit
+        .map((p) => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`)
+        .sort()
+        .join("|"),
+    [farmCoordsForFit],
+  );
+
   const paths: [number, number][][] = farmsWithDistance.map((f) => [
     [userLocation.lat, userLocation.lng],
     [f.lat, f.lng],
@@ -212,15 +281,24 @@ export default function VendorPerformanceMap() {
         <MapContainer
           center={[userLocation.lat, userLocation.lng]}
           zoom={farmsWithDistance.length > 0 ? 13 : 10}
+          minZoom={2}
+          maxZoom={18}
+          maxBounds={WORLD_BOUNDS}
+          maxBoundsViscosity={0.85}
+          attributionControl={false}
           className="h-full w-full z-0"
         >
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-            attribution="&copy; OpenStreetMap contributors &copy; CARTO"
+            noWrap
           />
 
           {farmsWithDistance.length > 0 && (
-            <RecenterAndFitBounds points={allPoints} />
+            <RecenterAndFitBounds
+              user={userLocation}
+              farms={farmCoordsForFit}
+              fitKey={farmFitKey}
+            />
           )}
 
           <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
@@ -311,6 +389,18 @@ export default function VendorPerformanceMap() {
           {farmsWithDistance.length} farms visible on map
         </span>
       </div>
+      <p className="mt-2 text-[10px] leading-snug text-gray-400">
+        Map: ©{" "}
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-gray-300 underline-offset-2 hover:text-gray-600"
+        >
+          OpenStreetMap
+        </a>{" "}
+        contributors · © CARTO · Leaflet
+      </p>
     </div>
   );
 }

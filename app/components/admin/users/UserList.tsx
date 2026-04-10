@@ -33,6 +33,12 @@ export default function UserList() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSellerModal, setShowSellerModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [grantTargetUser, setGrantTargetUser] = useState<User | null>(null);
+  const [grantPoints, setGrantPoints] = useState("100");
+  const [grantReason, setGrantReason] = useState("Manual admin grant");
+  const [grantError, setGrantError] = useState("");
+  const [grantSubmitting, setGrantSubmitting] = useState(false);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -187,6 +193,50 @@ export default function UserList() {
     }
   };
 
+  const openGrantModal = (user: User) => {
+    if (user.role !== "Buyer") return;
+    setGrantTargetUser(user);
+    setGrantPoints("100");
+    setGrantReason("Manual admin grant");
+    setGrantError("");
+    setShowGrantModal(true);
+  };
+
+  const closeGrantModal = () => {
+    if (grantSubmitting) return;
+    setShowGrantModal(false);
+    setGrantTargetUser(null);
+    setGrantError("");
+  };
+
+  const handleGrantLoyaltyPoints = async () => {
+    if (!token || !grantTargetUser) return;
+
+    const points = Number(grantPoints.trim());
+    if (!Number.isInteger(points) || points <= 0) {
+      setGrantError("Points must be a positive whole number.");
+      return;
+    }
+
+    setGrantSubmitting(true);
+    setGrantError("");
+    const res = await userService.grantLoyaltyPoints(
+      grantTargetUser._id,
+      points,
+      grantReason.trim(),
+      token,
+    );
+    setGrantSubmitting(false);
+
+    if (res.success) {
+      closeGrantModal();
+      fetchUsers(page, search, roleFilter, statusFilter);
+      return;
+    }
+
+    setGrantError(res.message || "Failed to grant loyalty points.");
+  };
+
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "N/A";
     return format(new Date(dateStr), "dd MMM yyyy");
@@ -335,6 +385,14 @@ export default function UserList() {
                           View Details
                         </button>
                       )}
+                      {user.role === "Buyer" && (
+                        <button
+                          onClick={() => openGrantModal(user)}
+                          className="text-indigo-600 hover:text-indigo-700 text-xs font-semibold hover:underline transition-colors"
+                        >
+                          Give Points
+                        </button>
+                      )}
                       <button
                         onClick={() => handleToggleStatus(user._id)}
                         className="text-amber-600 hover:text-amber-700 text-xs font-semibold hover:underline transition-colors"
@@ -412,6 +470,71 @@ export default function UserList() {
             setSelectedUser(null);
           }}
         />
+      )}
+
+      {showGrantModal && grantTargetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+            <h2 className="mb-1 text-xl font-bold text-gray-900">
+              Grant Loyalty Points
+            </h2>
+            <p className="mb-5 text-sm text-gray-600">
+              Add points to <span className="font-medium">{grantTargetUser.email}</span>
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Points
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={grantPoints}
+                  onChange={(e) => setGrantPoints(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 transition-colors focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                  placeholder="Enter points"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Reason (optional)
+                </label>
+                <textarea
+                  value={grantReason}
+                  onChange={(e) => setGrantReason(e.target.value)}
+                  rows={3}
+                  maxLength={200}
+                  className="w-full resize-none rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 transition-colors focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                  placeholder="Reason for granting points"
+                />
+              </div>
+            </div>
+
+            {grantError && (
+              <p className="mt-3 text-xs font-medium text-red-600">{grantError}</p>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
+              <button
+                onClick={closeGrantModal}
+                disabled={grantSubmitting}
+                className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGrantLoyaltyPoints}
+                disabled={grantSubmitting}
+                className="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {grantSubmitting ? "Granting..." : "Grant Points"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

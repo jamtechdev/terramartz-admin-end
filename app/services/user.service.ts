@@ -10,6 +10,7 @@ export const userService = {
   toggleIsActive,
   updateUserRole,
   updateUserDetails,
+  grantLoyaltyPoints,
   deleteUser,
 };
 
@@ -168,6 +169,37 @@ async function deleteUser(id: string, token?: string) {
         },
         withCredentials: true,
       }
+    );
+
+    return {
+      success: true as const,
+      data: response.data,
+    };
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+// ======================
+// GRANT LOYALTY POINTS
+// ======================
+async function grantLoyaltyPoints(
+  id: string,
+  points: number,
+  reason?: string,
+  token?: string,
+) {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/admin/users/${id}/loyalty-points`,
+      { points, reason },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        withCredentials: true,
+      },
     );
 
     return {
