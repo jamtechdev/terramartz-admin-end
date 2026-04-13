@@ -42,14 +42,14 @@ export async function getAdminKYCApplications(
     }
 
     // Transform backend response to match expected format
-    return { 
-      status: 'success', 
+    return {
+      status: 'success',
       data: {
         applications: data.data.applications,
         total: data.total,
         page: data.page,
-        limit: filters.limit || 10
-      }
+        limit: typeof data.limit === 'number' ? data.limit : filters.limit || 10,
+      },
     };
   } catch (err: any) {
     return { status: 'error', error: err.message || 'Failed to fetch KYC applications' };
