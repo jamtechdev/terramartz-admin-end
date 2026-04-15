@@ -9,6 +9,7 @@ type AdminLoginPayload = {
 
 export const authService = {
   adminLogin,
+  getAdminMe,
 };
 
 async function adminLogin(payload: AdminLoginPayload) {
@@ -22,6 +23,17 @@ async function adminLogin(payload: AdminLoginPayload) {
       },
     }
   );
+
+  return response.data;
+}
+
+async function getAdminMe(token: string) {
+  const response = await axios.get(`${BASE_URL}/api/admin/auth/me`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 }

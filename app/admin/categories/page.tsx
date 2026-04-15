@@ -10,6 +10,7 @@ import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import { getReadableAccessError } from "@/app/utils/accessError";
 
 export type Category = {
   _id: string;
@@ -60,7 +61,7 @@ export default function CategoriesPage() {
     );
 
     if (!res.success) {
-      toast.error(res.message);
+      toast.error(getReadableAccessError(res.message, "Failed to load categories"));
 
       if (res.statusCode === 401) {
         router.push("/admin/login");
@@ -113,7 +114,7 @@ export default function CategoriesPage() {
     setLoading(false);
 
     if (!res.success) {
-      toast.error(res.message);
+      toast.error(getReadableAccessError(res.message, "Failed to save category"));
       return;
     }
 
@@ -140,7 +141,7 @@ export default function CategoriesPage() {
     const res = await categoriesService.deleteCategory(deleteId, token);
 
     if (!res.success) {
-      toast.error(res.message);
+      toast.error(getReadableAccessError(res.message, "Failed to delete category"));
 
       if (res.statusCode === 401) {
         router.push("/admin/login");
@@ -168,7 +169,7 @@ export default function CategoriesPage() {
       toast.success("Category status updated successfully.");
       fetchCategories();
     } else {
-      toast.error(`Error: ${res.message}`);
+      toast.error(getReadableAccessError(res.message, "Failed to update category status"));
     }
   };
 

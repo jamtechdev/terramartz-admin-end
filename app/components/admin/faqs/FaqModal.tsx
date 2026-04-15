@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Faq, faqService } from "@/app/services/faq.service";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "react-hot-toast";
+import { getReadableAccessError } from "@/app/utils/accessError";
 
 type Props = {
     isOpen: boolean;
@@ -47,7 +48,7 @@ export default function FaqModal({ isOpen, onClose, faq, onSuccess }: Props) {
             }
             onSuccess();
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Something went wrong");
+            toast.error(getReadableAccessError(error, "Something went wrong"));
         } finally {
             setLoading(false);
         }

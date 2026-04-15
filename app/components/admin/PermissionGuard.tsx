@@ -1,10 +1,11 @@
 "use client";
 
 import { useAuth } from "../../context/AuthContext";
+import type { PermissionModule } from "../../context/AuthContext";
 
 interface PermissionGuardProps {
   children: React.ReactNode;
-  module: string;
+  module: PermissionModule;
   accessLevel?: "View" | "Full";
   fallback?: React.ReactNode;
 }

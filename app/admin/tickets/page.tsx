@@ -13,6 +13,7 @@ import {
   // getMyTickets
 } from '@/app/services/ticket.service';
 import { getUserRoleFromToken } from '@/app/utils/authClient';
+import { getReadableAccessError } from '@/app/utils/accessError';
 import { toast } from 'sonner';
 import { FaUser, FaEnvelope, FaPhone, FaTag, FaComments, FaClock, FaCheck, FaExclamationTriangle, FaUserCheck } from 'react-icons/fa';
 import { RiTicketLine } from 'react-icons/ri';
@@ -203,7 +204,7 @@ export default function TicketPage() {
       // }
     } catch (err: any) {
       setError(err.message || 'Failed to load data');
-      toast.error(err.message || 'Failed to load data');
+      toast.error(getReadableAccessError(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -261,7 +262,7 @@ export default function TicketPage() {
       await fetchTickets();
       toast.success('Data refreshed successfully');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to refresh data');
+      toast.error(getReadableAccessError(err, 'Failed to refresh data'));
     }
   };
 
@@ -287,10 +288,10 @@ export default function TicketPage() {
         setSelectedInquiry(inquiryData);
         setViewMode('detail');
       } else {
-        toast.error(res.error || 'Failed to load inquiry details');
+        toast.error(getReadableAccessError(res.error, 'Failed to load inquiry details'));
       }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to load inquiry details');
+      toast.error(getReadableAccessError(err, 'Failed to load inquiry details'));
     }
   };
 
@@ -335,10 +336,10 @@ export default function TicketPage() {
         
         toast.success(`Inquiry status updated to ${status}`);
       } else {
-        toast.error(res.error || 'Failed to update status');
+        toast.error(getReadableAccessError(res.error, 'Failed to update status'));
       }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to update status');
+      toast.error(getReadableAccessError(err, 'Failed to update status'));
     } finally {
       setIsProcessing(false);
     }
@@ -384,10 +385,10 @@ export default function TicketPage() {
         
         toast.success(newAdminId ? 'Ticket assigned successfully' : 'Ticket unassigned successfully');
       } else {
-        toast.error(res.error || 'Failed to assign ticket');
+        toast.error(getReadableAccessError(res.error, 'Failed to assign ticket'));
       }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to assign ticket');
+      toast.error(getReadableAccessError(err, 'Failed to assign ticket'));
     } finally {
       setIsProcessing(false);
     }

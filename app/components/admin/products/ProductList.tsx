@@ -153,9 +153,17 @@ export default function ProductList() {
           ? "Product approved for catalog"
           : "Approval removed",
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error toggling approval:", error);
-      toast.error("Could not update approval.");
+      const apiMessage = error?.response?.data?.message || error?.message;
+      const denied = /full access to the products module/i.test(
+        String(apiMessage || ""),
+      );
+      toast.error(
+        denied
+          ? "Access denied: you need Full Products permission to approve or revoke catalog approval."
+          : apiMessage || "Could not update approval.",
+      );
     }
   };
 

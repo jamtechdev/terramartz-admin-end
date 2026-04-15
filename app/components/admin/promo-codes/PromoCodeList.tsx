@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import { getReadableAccessError } from "@/app/utils/accessError";
 
 const Loader = () => (
   <div className="flex justify-center py-10">
@@ -59,7 +60,7 @@ export default function PromoCodeList() {
       setTotal(res.total || 0);
       setTotalPages(Math.ceil((res.total || 0) / limit));
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to fetch promo codes");
+      toast.error(getReadableAccessError(error, "Failed to fetch promo codes"));
       if (error.response?.status === 401) {
         router.push("/admin/login");
       }
@@ -101,7 +102,7 @@ export default function PromoCodeList() {
       setEditPromoCode(null);
       fetchPromoCodes();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to save promo code");
+      toast.error(getReadableAccessError(error, "Failed to save promo code"));
     } finally {
       setSaving(false);
       setLoading(false);
@@ -123,7 +124,7 @@ export default function PromoCodeList() {
       setDeleteId(null);
       fetchPromoCodes();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to delete promo code");
+      toast.error(getReadableAccessError(error, "Failed to delete promo code"));
       if (error.response?.status === 401) {
         router.push("/admin/login");
       }
@@ -149,7 +150,7 @@ export default function PromoCodeList() {
       toast.success("Promo code status updated successfully.");
       fetchPromoCodes();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update status");
+      toast.error(getReadableAccessError(error, "Failed to update status"));
     } finally {
       setLoading(false);
     }

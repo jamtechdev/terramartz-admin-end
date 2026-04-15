@@ -85,9 +85,17 @@ export default function ProductView({ productId }: ProductViewProps) {
       await productService.updateProductStatus(product._id, newStatus, token);
       setProduct((prev) => (prev ? { ...prev, status: newStatus } : null));
       toast.success(`Listing status set to ${formatStatus(newStatus)}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error updating product status:", err);
-      toast.error("Could not update listing status.");
+      const apiMessage = err?.response?.data?.message || err?.message;
+      const denied = /full access to the products module/i.test(
+        String(apiMessage || ""),
+      );
+      toast.error(
+        denied
+          ? "Access denied: you need Full Products permission to change listing status."
+          : apiMessage || "Could not update listing status.",
+      );
     } finally {
       setStatusLoading(false);
     }
@@ -103,9 +111,17 @@ export default function ProductView({ productId }: ProductViewProps) {
       toast.success(
         next ? "Product approved for catalog" : "Catalog approval removed",
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error toggling approval:", err);
-      toast.error("Could not update catalog approval.");
+      const apiMessage = err?.response?.data?.message || err?.message;
+      const denied = /full access to the products module/i.test(
+        String(apiMessage || ""),
+      );
+      toast.error(
+        denied
+          ? "Access denied: you need Full Products permission to approve or revoke catalog approval."
+          : apiMessage || "Could not update catalog approval.",
+      );
     } finally {
       setApprovalLoading(false);
     }

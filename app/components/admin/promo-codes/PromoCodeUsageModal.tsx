@@ -5,6 +5,7 @@ import { PromoCode, promoCodeService, PromoCodeUsage } from "@/app/services/prom
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
+import { getReadableAccessError } from "@/app/utils/accessError";
 
 const Loader = () => (
   <div className="flex justify-center py-10">
@@ -45,7 +46,7 @@ export default function PromoCodeUsageModal({
         usageDetails: res.usageDetails,
       });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to fetch usage data");
+      toast.error(getReadableAccessError(error, "Failed to fetch usage data"));
     } finally {
       setLoading(false);
     }

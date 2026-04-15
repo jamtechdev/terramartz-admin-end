@@ -6,6 +6,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { authService } from "@/app/services/auth.service";
 import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AdminLogin() {
   const { login, isAuthenticated, loading } = useAuth();
@@ -16,6 +17,7 @@ export default function AdminLogin() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -122,13 +124,29 @@ export default function AdminLogin() {
               className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
             />
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                className="w-full px-4 py-3 pr-12 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500/50"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" aria-hidden />
+                ) : (
+                  <Eye className="h-5 w-5" aria-hidden />
+                )}
+              </button>
+            </div>
 
             {/* ✅ Custom error message */}
             {error && (

@@ -47,6 +47,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FaUserCheck, FaUserClock, FaUserTimes, FaFileAlt } from 'react-icons/fa';
+import { getReadableAccessError } from '@/app/utils/accessError';
 
 // Transform backend application data to frontend KYCApplication format
 function transformBackendApplication(backendApp: any): any {
@@ -228,7 +229,7 @@ export default function AdminKYCPage() {
       await loadApplications();
       toast.success('Data refreshed successfully');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to refresh data');
+      toast.error(getReadableAccessError(err, 'Failed to refresh data'));
     } finally {
       setRefreshing(false);
     }
@@ -267,10 +268,10 @@ export default function AdminKYCPage() {
         setViewMode('detail');
         dispatch(setSelectedApplication(transformedApp));
       } else {
-        toast.error(response.error || 'Failed to load application details');
+        toast.error(getReadableAccessError(response.error, 'Failed to load application details'));
       }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to load application details');
+      toast.error(getReadableAccessError(err, 'Failed to load application details'));
     }
   };
 
@@ -303,10 +304,10 @@ export default function AdminKYCPage() {
         dispatch(updateApplication(transformedApp));
         toast.success('Application approved successfully');
       } else {
-        toast.error(response.error || 'Failed to approve application');
+        toast.error(getReadableAccessError(response.error, 'Failed to approve application'));
       }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to approve application');
+      toast.error(getReadableAccessError(err, 'Failed to approve application'));
     } finally {
       setIsProcessing(false);
     }
@@ -347,10 +348,10 @@ export default function AdminKYCPage() {
         setRejectionReasonError('');
         toast.success('Application rejected successfully');
       } else {
-        toast.error(response.error || 'Failed to reject application');
+        toast.error(getReadableAccessError(response.error, 'Failed to reject application'));
       }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to reject application');
+      toast.error(getReadableAccessError(err, 'Failed to reject application'));
     } finally {
       setIsProcessing(false);
     }

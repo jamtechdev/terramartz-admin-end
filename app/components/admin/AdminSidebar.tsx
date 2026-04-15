@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
+import type { PermissionModule } from "../../context/AuthContext";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { notificationService } from "@/app/services/notification.service";
@@ -30,6 +31,16 @@ import { FaUsersGear } from "react-icons/fa6";
 type Props = {
   mobileOpen: boolean;
   setMobileOpen: (v: boolean) => void;
+};
+
+type MenuItem = {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+  requiredModule?: PermissionModule;
+  superAdminOnly?: boolean;
+  count?: number;
+  children?: { name: string; href: string }[];
 };
 
 export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
@@ -61,7 +72,7 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
     return () => clearInterval(interval);
   }, [token]);
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       name: "Dashboard",
       href: "/admin",
@@ -188,12 +199,6 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: Props) {
     // If it's super admin only, check role
     if (item.superAdminOnly) {
       return user?.role === "Super Admin";
-    }
-
-    // Special case for Blogs - check both permission and role
-    if (item.requiredModule === "Blogs") {
-      // Allow all roles to see Blogs in the sidebar (view-only for non Super Admin)
-      return true;
     }
 
     // Otherwise check module permission

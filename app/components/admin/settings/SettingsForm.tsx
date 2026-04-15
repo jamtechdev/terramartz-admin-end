@@ -74,7 +74,7 @@ export default function SettingsForm() {
       <DashboardCard>
         <DashboardHeader title="Setting" />
         <div className="space-y-4">
-          <div>
+          {/* <div>
             <label className="text-black block text-lg">Site Name</label>
             <input
               type="text"
@@ -82,10 +82,10 @@ export default function SettingsForm() {
               onChange={(e) => setSiteName(e.target.value)}
               className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
             />
-          </div>
+          </div> */}
 
           {/* Admin Email */}
-          <div>
+          {/* <div>
             <label className="text-black block text-lg">Admin Email</label>
             <input
               type="email"
@@ -93,10 +93,10 @@ export default function SettingsForm() {
               onChange={(e) => setAdminEmail(e.target.value)}
               className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
             />
-          </div>
+          </div> */}
 
           {/* Password */}
-          <div>
+          {/* <div>
             <label className="text-black block text-lg">Password</label>
             <input
               type="password"
@@ -105,10 +105,10 @@ export default function SettingsForm() {
               placeholder="Leave blank to keep current password"
               className="w-full px-4 py-3 bg-white border-black/30 text-black/50 placeholder:text-black/50 border rounded-lg focus:outline-none focus:border-green-500"
             />
-          </div>
+          </div> */}
 
           {/* Theme */}
-          <div>
+          {/* <div>
             <label className="text-black block text-lg">Theme</label>
             <select
               value={theme}
@@ -118,7 +118,7 @@ export default function SettingsForm() {
               <option>Light</option>
               <option>Dark</option>
             </select>
-          </div>
+          </div> */}
 
           <div>
             <label className="text-black block text-lg">
@@ -140,7 +140,7 @@ export default function SettingsForm() {
           </div>
 
           {/* Notifications */}
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <label className="flex items-center gap-2 text-black cursor-pointer">
               <input
                 checked={notifications}
@@ -150,7 +150,7 @@ export default function SettingsForm() {
               />
               Enable Notifications
             </label>
-          </div>
+          </div> */}
 
           {/* Save Button */}
           <button

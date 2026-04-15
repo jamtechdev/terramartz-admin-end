@@ -6,6 +6,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "react-hot-toast";
 import { RiEditLine, RiDeleteBinLine, RiSearchLine, RiAddLine } from "react-icons/ri";
 import FaqModal from "./FaqModal";
+import { getReadableAccessError } from "@/app/utils/accessError";
 
 export default function FaqList() {
     const { token, hasPermission } = useAuth();
@@ -49,7 +50,7 @@ export default function FaqList() {
             setFaqs(res.data);
             setTotalPages(res.totalPages || 1);
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to load FAQs");
+            toast.error(getReadableAccessError(error, "Failed to load FAQs"));
         } finally {
             setLoading(false);
         }
@@ -67,7 +68,7 @@ export default function FaqList() {
             toast.success("FAQ deleted successfully");
             loadFaqs();
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to delete FAQ");
+            toast.error(getReadableAccessError(error, "Failed to delete FAQ"));
         }
     };
 
@@ -87,7 +88,7 @@ export default function FaqList() {
     };
 
     // Optional: check permissions
-    const canEdit = hasPermission("Support", "Full") || true; // Adjust according to your role system
+    const canEdit = hasPermission("Support", "Full");
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
