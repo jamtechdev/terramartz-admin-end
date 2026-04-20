@@ -87,6 +87,7 @@ export const productService = {
   rejectProduct,
   toggleProductApproval,
   updateProductStatus,
+  updateProductFeatured,
   exportProductsCSV,
 };
 
@@ -200,6 +201,25 @@ async function updateProductStatus(
   const response = await axios.patch(
     `${BASE_URL}/api/admin/products/${productId}/status`,
     { status },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    },
+  );
+
+  return response.data;
+}
+
+async function updateProductFeatured(
+  productId: string,
+  featured: boolean,
+  token?: string,
+) {
+  const response = await axios.patch(
+    `${BASE_URL}/api/admin/products/${productId}/featured`,
+    { featured },
     {
       headers: {
         "Content-Type": "application/json",

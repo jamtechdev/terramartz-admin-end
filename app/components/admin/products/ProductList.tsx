@@ -15,6 +15,7 @@ import {
   Eye,
   Check,
   X,
+  Star,
 } from "lucide-react";
 
 function lifecycleBadgeClass(status: string) {
@@ -41,6 +42,9 @@ export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [featuredLoadingId, setFeaturedLoadingId] = useState<string | null>(
+    null,
+  );
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -164,6 +168,48 @@ export default function ProductList() {
           ? "Access denied: you need Full Products permission to approve or revoke catalog approval."
           : apiMessage || "Could not update approval.",
       );
+    }
+  };
+
+  const handleToggleFeatured = async (
+    productId: string,
+    currentFeatured: boolean,
+  ) => {
+    if (!token) return;
+
+    setFeaturedLoadingId(productId);
+    try {
+      await productService.updateProductFeatured(
+        productId,
+        !currentFeatured,
+        token,
+      );
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product._id === productId
+            ? { ...product, featured: !currentFeatured }
+            : product,
+        ),
+      );
+      toast.success(
+        !currentFeatured
+          ? "Product marked as featured"
+          : "Product removed from featured",
+      );
+    } catch (error: unknown) {
+      console.error("Error toggling featured:", error);
+      const err = error as { response?: { data?: { message?: string } } };
+      const apiMessage = err?.response?.data?.message || (error as Error)?.message;
+      const denied = /full access to the products module/i.test(
+        String(apiMessage || ""),
+      );
+      toast.error(
+        denied
+          ? "Access denied: you need Full Products permission to change featured."
+          : apiMessage || "Could not update featured flag.",
+      );
+    } finally {
+      setFeaturedLoadingId(null);
     }
   };
 
@@ -506,43 +552,79 @@ export default function ProductList() {
                     >
                       Seller · {product.createdBy?.email || "—"}
                     </p>
+                    <p className="text-xs text-slate-600 mt-2">
+                      <span className="text-slate-400">Featured · </span>
+                      <span className="font-medium tabular-nums">
+                        {product.featured ? "Yes" : "No"}
+                      </span>
+                    </p>
 
-                    <div className="mt-auto pt-4 flex gap-2">
+                    <div className="mt-auto pt-4 flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            router.push(`/admin/products/${product._id}`)
+                          }
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleToggleApproval(
+                              product._id,
+                              product.adminApproved || false,
+                            )
+                          }
+                          className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-sm font-medium text-white ${
+                            product.adminApproved
+                              ? "bg-rose-600 hover:bg-rose-700"
+                              : "bg-emerald-600 hover:bg-emerald-700"
+                          }`}
+                        >
+                          {product.adminApproved ? (
+                            <>
+                              <X className="w-4 h-4" />
+                              Revoke
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-4 h-4" />
+                              Approve
+                            </>
+                          )}
+                        </button>
+                      </div>
                       <button
                         type="button"
+                        disabled={featuredLoadingId === product._id}
                         onClick={() =>
-                          router.push(`/admin/products/${product._id}`)
-                        }
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50"
-                      >
-                        <Eye className="w-4 h-4" />
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleToggleApproval(
+                          handleToggleFeatured(
                             product._id,
-                            product.adminApproved || false,
+                            Boolean(product.featured),
                           )
                         }
-                        className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-sm font-medium text-white ${
-                          product.adminApproved
-                            ? "bg-rose-600 hover:bg-rose-700"
-                            : "bg-emerald-600 hover:bg-emerald-700"
+                        className={`w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-sm font-medium border transition-colors disabled:opacity-50 disabled:pointer-events-none ${
+                          product.featured
+                            ? "border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
+                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                         }`}
                       >
-                        {product.adminApproved ? (
-                          <>
-                            <X className="w-4 h-4" />
-                            Revoke
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-4 h-4" />
-                            Approve
-                          </>
-                        )}
+                        <Star
+                          className={`w-4 h-4 shrink-0 ${
+                            product.featured
+                              ? "fill-amber-500 text-amber-600"
+                              : "text-slate-400"
+                          }`}
+                        />
+                        {featuredLoadingId === product._id
+                          ? "Saving…"
+                          : product.featured
+                            ? "Remove featured"
+                            : "Mark featured"}
                       </button>
                     </div>
                   </div>

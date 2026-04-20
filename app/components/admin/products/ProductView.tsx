@@ -50,6 +50,7 @@ export default function ProductView({ productId }: ProductViewProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [statusLoading, setStatusLoading] = useState(false);
   const [approvalLoading, setApprovalLoading] = useState(false);
+  const [featuredLoading, setFeaturedLoading] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -124,6 +125,41 @@ export default function ProductView({ productId }: ProductViewProps) {
       );
     } finally {
       setApprovalLoading(false);
+    }
+  };
+
+  const handleFeaturedToggle = async (nextFeatured: boolean) => {
+    if (!token || !product) return;
+
+    setFeaturedLoading(true);
+    try {
+      await productService.updateProductFeatured(
+        product._id,
+        nextFeatured,
+        token,
+      );
+      setProduct((prev) =>
+        prev ? { ...prev, featured: nextFeatured } : null,
+      );
+      toast.success(
+        nextFeatured
+          ? "Product marked as featured"
+          : "Product removed from featured",
+      );
+    } catch (err: unknown) {
+      console.error("Error updating featured:", err);
+      const e = err as { response?: { data?: { message?: string } } };
+      const apiMessage = e?.response?.data?.message || (err as Error)?.message;
+      const denied = /full access to the products module/i.test(
+        String(apiMessage || ""),
+      );
+      toast.error(
+        denied
+          ? "Access denied: you need Full Products permission to change featured."
+          : apiMessage || "Could not update featured flag.",
+      );
+    } finally {
+      setFeaturedLoading(false);
     }
   };
 
@@ -300,6 +336,46 @@ export default function ProductView({ productId }: ProductViewProps) {
                 lifecycle. Catalog approval controls whether the item is allowed
                 in the public catalog.
               </p>
+
+              <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <span className="text-xs font-medium text-slate-600 block mb-0.5">
+                    Featured on storefront
+                  </span>
+                  <span className="text-sm font-semibold text-slate-900">
+                    {product.featured ? "Yes" : "No"}
+                  </span>
+                  <p className="text-xs text-slate-500 mt-1 max-w-md">
+                    Featured products can appear in homepage “featured” slots
+                    when active and approved.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleFeaturedToggle(!product.featured)
+                  }
+                  disabled={featuredLoading}
+                  className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold shrink-0 border transition-colors disabled:opacity-50 ${
+                    product.featured
+                      ? "border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
+                      : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                  }`}
+                >
+                  <Star
+                    className={`w-4 h-4 ${
+                      product.featured
+                        ? "fill-amber-500 text-amber-600"
+                        : "text-slate-400"
+                    }`}
+                  />
+                  {featuredLoading
+                    ? "Saving…"
+                    : product.featured
+                      ? "Remove featured"
+                      : "Mark featured"}
+                </button>
+              </div>
             </div>
 
             {/* Price */}
