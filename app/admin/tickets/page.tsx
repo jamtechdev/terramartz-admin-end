@@ -233,6 +233,15 @@ export default function TicketPage() {
     }
   };
 
+  const formatStatusLabel = (status?: string) => {
+    if (!status) return 'Unknown';
+    return status
+      .replace(/_/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, (ch) => ch.toUpperCase());
+  };
+
   // Helper function to calculate stats from inquiries
   const calculateStatsFromInquiries = (inquiries: ContactInquiry[]): ContactStats => {
     if (!inquiries || inquiries.length === 0) {
@@ -457,7 +466,7 @@ export default function TicketPage() {
               <div>
                 <p className="text-sm text-gray-500">Status</p>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedInquiry.status)}`}>
-                  {selectedInquiry.status ? selectedInquiry.status.charAt(0).toUpperCase() + selectedInquiry.status.slice(1) : 'Unknown'}
+                  {formatStatusLabel(selectedInquiry.status)}
                 </span>
               </div>
               <div>
@@ -806,7 +815,7 @@ export default function TicketPage() {
                           getStatusColor(inquiry.status)
                         }`}
                       >
-                        {inquiry.status ? inquiry.status.charAt(0).toUpperCase() + inquiry.status.slice(1) : 'Unknown'}
+                        {formatStatusLabel(inquiry.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-700">

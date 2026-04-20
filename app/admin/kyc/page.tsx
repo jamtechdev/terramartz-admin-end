@@ -96,7 +96,13 @@ function transformBackendApplication(backendApp: any): any {
 }
 
 function formatKycStatusLabel(status: string) {
-  return status?.replace(/_/g, ' ') || '—';
+  return (
+    status
+      ?.replace(/_/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, (ch) => ch.toUpperCase()) || '—'
+  );
 }
 
 function kycStatusBadgeClass(status: string) {

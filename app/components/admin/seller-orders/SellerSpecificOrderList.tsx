@@ -85,6 +85,13 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
         }
     };
 
+    const formatStatusLabel = (value = "") =>
+        value
+            .replace(/_/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .replace(/\b\w/g, (ch) => ch.toUpperCase());
+
     return (
         <div className="space-y-4">
             {seller && (
@@ -207,7 +214,7 @@ export default function SellerSpecificOrderList({ sellerId }: { sellerId: string
                                                                                 order.status === 'return_rejected' ? 'bg-rose-100 text-rose-700' :
                                                                                     'bg-gray-100 text-gray-700'
                                                     }`}>
-                                                    {order.status.replace(/_/g, ' ')}
+                                                    {formatStatusLabel(order.status)}
                                                 </span>
                                             </td>
                                         </tr>

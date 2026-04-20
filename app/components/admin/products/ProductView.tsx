@@ -38,7 +38,13 @@ function lifecycleBadgeClass(status: string) {
 }
 
 function formatStatus(status: string) {
-  return status?.replace(/_/g, " ") || "—";
+  return (
+    status
+      ?.replace(/_/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/\b\w/g, (ch) => ch.toUpperCase()) || "—"
+  );
 }
 
 export default function ProductView({ productId }: ProductViewProps) {
