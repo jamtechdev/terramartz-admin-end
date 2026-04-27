@@ -37,14 +37,8 @@ function lifecycleBadgeClass(status: string) {
   return map[s] || "bg-slate-100 text-slate-700 ring-slate-500/20";
 }
 
-function formatStatus(status: string) {
-  return (
-    status
-      ?.replace(/_/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .replace(/\b\w/g, (ch) => ch.toUpperCase()) || "—"
-  );
+function sellerStatusLabel(status: string) {
+  return status?.toLowerCase() === "active" ? "Active" : "Inactive";
 }
 
 export default function ProductView({ productId }: ProductViewProps) {
@@ -54,7 +48,6 @@ export default function ProductView({ productId }: ProductViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [statusLoading, setStatusLoading] = useState(false);
   const [approvalLoading, setApprovalLoading] = useState(false);
   const [featuredLoading, setFeaturedLoading] = useState(false);
 
@@ -84,37 +77,22 @@ export default function ProductView({ productId }: ProductViewProps) {
     return `${process.env.NEXT_PUBLIC_S3_DIRECT_URL}/products/${imageName}`;
   };
 
-  const handleStatusChange = async (newStatus: string) => {
-    if (!token || !product) return;
-
-    setStatusLoading(true);
-    try {
-      await productService.updateProductStatus(product._id, newStatus, token);
-      setProduct((prev) => (prev ? { ...prev, status: newStatus } : null));
-      toast.success(`Listing status set to ${formatStatus(newStatus)}`);
-    } catch (err: any) {
-      console.error("Error updating product status:", err);
-      const apiMessage = err?.response?.data?.message || err?.message;
-      const denied = /full access to the products module/i.test(
-        String(apiMessage || ""),
-      );
-      toast.error(
-        denied
-          ? "Access denied: you need Full Products permission to change listing status."
-          : apiMessage || "Could not update listing status.",
-      );
-    } finally {
-      setStatusLoading(false);
-    }
-  };
-
   const handleApprovalToggle = async () => {
     if (!token || !product) return;
     const next = !product.adminApproved;
     setApprovalLoading(true);
     try {
-      await productService.toggleProductApproval(product._id, next, token);
-      setProduct((prev) => (prev ? { ...prev, adminApproved: next } : null));
+      const res = await productService.toggleProductApproval(
+        product._id,
+        next,
+        token,
+      );
+      const updated = (res as { data?: Product })?.data;
+      if (updated && updated._id) {
+        setProduct(updated);
+      } else {
+        setProduct((prev) => (prev ? { ...prev, adminApproved: next } : null));
+      }
       toast.success(
         next ? "Product approved for catalog" : "Catalog approval removed",
       );
@@ -266,9 +244,9 @@ export default function ProductView({ productId }: ProductViewProps) {
               </h1>
               <div className="flex flex-wrap gap-2">
                 <span
-                  className={`text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-lg ring-1 ring-inset ${lifecycleBadgeClass(product.status)}`}
+                  className={`text-xs font-bold px-2.5 py-1 rounded-lg ring-1 ring-inset ${lifecycleBadgeClass(product.status)}`}
                 >
-                  {formatStatus(product.status)}
+                  {sellerStatusLabel(product.status)}
                 </span>
                 {product.organic && (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-600 text-white">
@@ -295,25 +273,23 @@ export default function ProductView({ productId }: ProductViewProps) {
                 Moderation
               </h2>
               <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-                <label className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-[200px]">
                   <span className="text-xs font-medium text-slate-600 mb-1.5 block">
-                    Listing status
+                    Listing status (seller-controlled)
                   </span>
-                  <select
-                    value={product.status}
-                    onChange={(e) => handleStatusChange(e.target.value)}
-                    disabled={statusLoading}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500 disabled:opacity-50"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="draft">Draft</option>
-                    <option value="pending">Pending</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="out_of_stock">Out of stock</option>
-                    <option value="archived">Archived</option>
-                  </select>
-                </label>
+                  <p className="text-sm text-slate-800">
+                    <span className="font-medium">{sellerStatusLabel(product.status)}</span>
+                    <span className="text-slate-500 text-xs block mt-0.5">
+                      Same value as the status badge next to the title.
+                    </span>
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                    Active and Inactive are set by the seller in their vendor
+                    dashboard. Staff use catalog approval below to allow or
+                    block the item in the public catalog (subject to seller
+                    status and stock).
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={handleApprovalToggle}
@@ -337,12 +313,6 @@ export default function ProductView({ productId }: ProductViewProps) {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-slate-500 mt-2">
-                Listing status is what sellers and customers see for the product
-                lifecycle. Catalog approval controls whether the item is allowed
-                in the public catalog.
-              </p>
-
               <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <span className="text-xs font-medium text-slate-600 block mb-0.5">

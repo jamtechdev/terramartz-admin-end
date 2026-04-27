@@ -32,20 +32,17 @@ function lifecycleBadgeClass(status: string) {
   return map[s] || "bg-slate-100 text-slate-700 ring-slate-500/20";
 }
 
-function formatStatus(status: string) {
-  return (
-    status
-      ?.replace(/_/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .replace(/\b\w/g, (ch) => ch.toUpperCase()) || "—"
-  );
+function sellerStatusLabel(status: string) {
+  return status?.toLowerCase() === "active" ? "Active" : "Inactive";
 }
 
 export default function ProductList() {
   const { token } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
+  const [sellerOptions, setSellerOptions] = useState<
+    Array<{ _id: string; name: string; email: string }>
+  >([]);
   const [loading, setLoading] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [featuredLoadingId, setFeaturedLoadingId] = useState<string | null>(
@@ -66,6 +63,7 @@ export default function ProductList() {
   const activeFilterCount = useMemo(() => {
     let n = 0;
     if (filters.search) n++;
+    if (filters.sellerId) n++;
     if (filters.status) n++;
     if (filters.productType) n++;
     if (filters.organic !== undefined && filters.organic !== null) n++;
@@ -100,6 +98,39 @@ export default function ProductList() {
   useEffect(() => {
     fetchProducts();
   }, [filters, token]);
+
+  useEffect(() => {
+    const fetchSellers = async () => {
+      if (!token) return;
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users?role=seller&page=1&limit=200`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            cache: "no-store",
+          },
+        );
+        const data = await res.json();
+        if (!res.ok || !Array.isArray(data?.users)) return;
+        const sellers = data.users
+          .map((u: any) => ({
+            _id: String(u._id || ""),
+            name: String(u.name || "").trim(),
+            email: String(u.email || "").trim(),
+          }))
+          .filter((u: { _id: string }) => Boolean(u._id));
+        setSellerOptions(sellers);
+      } catch (error) {
+        console.error("Error fetching seller options:", error);
+      }
+    };
+
+    fetchSellers();
+  }, [token]);
 
   const handleFilterChange = (key: keyof ProductFilters, value: unknown) => {
     setFilters((prev) => ({
@@ -284,6 +315,25 @@ export default function ProductList() {
             Refine results
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600 mb-1.5 block">
+                Seller
+              </span>
+              <select
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-500"
+                value={filters.sellerId || ""}
+                onChange={(e) =>
+                  handleFilterChange("sellerId", e.target.value || undefined)
+                }
+              >
+                <option value="">All sellers</option>
+                {sellerOptions.map((seller) => (
+                  <option key={seller._id} value={seller._id}>
+                    {seller.name || seller.email} {seller.email ? `(${seller.email})` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="block">
               <span className="text-xs font-medium text-slate-600 mb-1.5 block">
                 Listing status
@@ -497,18 +547,16 @@ export default function ProductList() {
                         No image
                       </div>
                     )}
-                    <div className="absolute top-2 left-2 right-2 flex justify-between items-start gap-2">
+                    <div className="absolute top-2 left-2 right-2 flex items-start gap-2">
                       <span
-                        className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-lg shadow-sm ${product.adminApproved ? "bg-white/95 text-emerald-800 ring-1 ring-emerald-600/20" : "bg-amber-50 text-amber-900 ring-1 ring-amber-600/25"}`}
+                        className={`text-[10px] font-semibold px-2 py-1 rounded-lg shadow-sm ${product.adminApproved ? "bg-white/95 text-emerald-800 ring-1 ring-emerald-600/20" : "bg-amber-50 text-amber-900 ring-1 ring-amber-600/25"}`}
                       >
-                        {product.adminApproved
-                          ? "Catalog OK"
-                          : "Needs approval"}
+                        {product.adminApproved ? "Approved" : "Rejected"}
                       </span>
                       <span
-                        className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-lg ring-1 ring-inset shrink-0 ${lifecycleBadgeClass(product.status)}`}
+                        className={`text-[10px] font-bold px-2 py-1 rounded-lg ring-1 ring-inset shrink-0 ml-auto ${lifecycleBadgeClass(product.status)}`}
                       >
-                        {formatStatus(product.status)}
+                        {sellerStatusLabel(product.status)}
                       </span>
                     </div>
                     <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
